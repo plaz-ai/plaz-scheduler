@@ -1,11 +1,11 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import AgendaPage from './AgendaPage';
 
 export default function AgendaLoader() {
-  const params = useSearchParams();
-  const token = params.get('token') ?? '';
+  const params = useParams<{ id: string }>();
+  const token = params?.id ?? '';
 
   if (!token) {
     return (
