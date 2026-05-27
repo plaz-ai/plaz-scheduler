@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Plaz brand — dark navy */
+  --color-navy:         #0A1628;
+  --color-navy-mid:     #162236;
+  --color-navy-light:   #1B3553;
+  --color-navy-card:    #1E2E45;
+
+  /* Amber/gold accent */
+  --color-amber:        #E8A24A;
+  --color-amber-hover:  #D08F36;
+  --color-amber-dim:    rgb(232 162 74 / 0.12);
+  --color-amber-soft:   rgb(232 162 74 / 0.08);
+
+  /* Text */
+  --color-cream:        #FAF7F2;
+  --color-muted:        rgb(250 247 242 / 0.5);
+  --color-subtle:       rgb(250 247 242 / 0.25);
+
+  /* Typography */
+  --font-display:       var(--font-fraunces);
+  --font-sans:          var(--font-plus-jakarta);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: #0A1628;
+  color: #FAF7F2;
+  font-family: var(--font-plus-jakarta), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin amber scrollbar for slot columns */
+.scrollbar-amber::-webkit-scrollbar { height: 3px; }
+.scrollbar-amber::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-amber::-webkit-scrollbar-thumb { background: rgba(232, 162, 74, 0.3); border-radius: 99px; }
