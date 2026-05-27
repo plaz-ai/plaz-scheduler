@@ -1,11 +1,12 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import AgendaPage from './AgendaPage';
 
-export default function AgendaLoader() {
-  const params = useParams<{ id: string }>();
-  const token = params?.id ?? '';
+function AgendaInner() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get('id') ?? '';
 
   if (!token) {
     return (
@@ -16,4 +17,12 @@ export default function AgendaLoader() {
   }
 
   return <AgendaPage token={token} />;
+}
+
+export default function AgendaLoader() {
+  return (
+    <Suspense>
+      <AgendaInner />
+    </Suspense>
+  );
 }
