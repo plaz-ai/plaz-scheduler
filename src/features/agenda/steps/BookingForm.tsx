@@ -96,73 +96,79 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
   }
 
   return (
-    <div ref={ref} className="step-panel max-w-md">
+    <div ref={ref} className="step-panel">
+      {/* Back button — full width, above the grid */}
       <button
         onClick={onBack}
-        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-10 cursor-pointer active:scale-[0.98]"
+        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98]"
       >
         <CaretLeft className="w-4 h-4" weight="regular" />
         Cambiar horario
       </button>
 
-      {/* Heading + slot summary */}
-      <div className="form-field mb-10">
-        <h2 className="font-display font-black text-5xl md:text-[clamp(3rem,6vw,4rem)] text-cream tracking-tighter leading-[0.92] mb-5">
-          Casi<br />listo.
-        </h2>
-        <p className="text-muted text-sm leading-relaxed">
-          <span className="text-cream font-medium">{selected.day.label}</span>
-          <span className="text-subtle mx-2">·</span>
-          <span className="font-mono text-amber">{selected.slot.start_madrid}</span>
-          <span className="text-subtle mx-2">·</span>
-          {durationMinutes}&thinsp;min
-        </p>
-      </div>
+      <div className="md:grid md:grid-cols-[2fr_3fr] md:gap-x-10 lg:gap-x-14 md:items-start">
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="form-field">
-          <FloatingInput
-            label="Nombre completo"
-            type="text"
-            value={name}
-            onChange={setName}
-            hint="María García"
-            autoComplete="name"
-          />
-        </div>
-
-        <div className="form-field">
-          <FloatingInput
-            label="Email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            hint="maria@ejemplo.com"
-            autoComplete="email"
-          />
-        </div>
-
-        {error && (
-          <p className="form-field text-red-400 text-sm border-l-2 border-red-400/40 pl-3 py-0.5">
-            {error}
+        {/* Left — heading + slot summary */}
+        <div className="form-field mb-8 md:mb-0 md:pt-1">
+          <h2 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-4">
+            Casi<br />listo.
+          </h2>
+          <p className="text-muted text-sm leading-relaxed mt-4">
+            <span className="text-cream font-medium">{selected.day.label}</span>
+            <br />
+            <span className="font-mono text-amber">{selected.slot.start_madrid}</span>
+            <span className="text-subtle mx-2">·</span>
+            {durationMinutes}&thinsp;min
           </p>
-        )}
+        </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-navy font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98] mt-2"
-        >
-          {isSubmitting ? (
-            <span className="inline-flex items-center justify-center gap-2">
-              <CircleNotch className="w-4 h-4 animate-spin" weight="bold" />
-              Confirmando...
-            </span>
-          ) : (
-            'Confirmar reserva'
+        {/* Right — form */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="form-field">
+            <FloatingInput
+              label="Nombre completo"
+              type="text"
+              value={name}
+              onChange={setName}
+              hint="María García"
+              autoComplete="name"
+            />
+          </div>
+
+          <div className="form-field">
+            <FloatingInput
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              hint="maria@ejemplo.com"
+              autoComplete="email"
+            />
+          </div>
+
+          {error && (
+            <p className="form-field text-red-400 text-sm border-l-2 border-red-400/40 pl-3 py-0.5">
+              {error}
+            </p>
           )}
-        </button>
-      </form>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-navy font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98]"
+          >
+            {isSubmitting ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <CircleNotch className="w-4 h-4 animate-spin" weight="bold" />
+                Confirmando...
+              </span>
+            ) : (
+              'Confirmar reserva'
+            )}
+          </button>
+        </form>
+
+      </div>
     </div>
   );
 }

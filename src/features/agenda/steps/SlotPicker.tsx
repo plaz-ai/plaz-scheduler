@@ -23,7 +23,6 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
 
   const todayMadrid = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
 
-  // Stagger grid slots when active day changes
   useGSAP(
     () => {
       if (!gridRef.current) return;
@@ -40,80 +39,87 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
 
   return (
     <div className="step-panel">
-      {/* Heading */}
-      <div className="mb-8 md:mb-10">
-        <h1 className="font-display font-black text-5xl md:text-[clamp(3rem,6vw,4.5rem)] text-cream tracking-tighter leading-[0.92] mb-4">
-          Elige tu<br />fecha.
-        </h1>
-        <div className="flex items-center gap-2 mt-5">
-          <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
-          <span className="text-muted text-xs">{data.duration_minutes} min · Madrid</span>
-        </div>
-      </div>
+      <div className="md:grid md:grid-cols-[2fr_3fr] md:gap-x-10 lg:gap-x-14 md:items-start">
 
-      {hasAnySlot ? (
-        <>
-          {/* Day tabs */}
-          <div className="flex overflow-x-auto -mx-1 px-1 mb-8 border-b border-cream/[0.08]">
-            {data.available_days.map((day) => {
-              const [weekday, dayNum] = day.short_label.split(' ');
-              const isActive = day.date === activeDay.date;
-              const isToday = day.date === todayMadrid;
-              const isEmpty = day.slots.length === 0;
-
-              return (
-                <button
-                  key={day.date}
-                  onClick={() => !isEmpty && setActiveDay(day)}
-                  disabled={isEmpty}
-                  className={[
-                    'flex flex-col items-center px-4 py-2.5 flex-none border-b-2 -mb-px',
-                    'transition-all duration-150 cursor-pointer',
-                    'disabled:opacity-25 disabled:cursor-default',
-                    isActive ? 'border-amber' : 'border-transparent hover:border-cream/20',
-                  ].join(' ')}
-                >
-                  <span className={[
-                    'text-[9px] font-semibold uppercase tracking-widest mb-1.5',
-                    isToday ? 'text-amber' : 'text-subtle',
-                  ].join(' ')}>
-                    {isToday ? 'Hoy' : weekday}
-                  </span>
-                  <span className={[
-                    'text-2xl font-bold leading-none',
-                    isActive ? 'text-cream' : isToday ? 'text-amber/60' : 'text-muted',
-                  ].join(' ')}>
-                    {dayNum}
-                  </span>
-                </button>
-              );
-            })}
+        {/* Left — heading */}
+        <div className="mb-8 md:mb-0 md:pt-1">
+          <h1 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-4">
+            Elige tu<br />fecha.
+          </h1>
+          <div className="flex items-center gap-2 mt-4">
+            <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
+            <span className="text-muted text-xs">{data.duration_minutes} min · Madrid</span>
           </div>
+        </div>
 
-          {/* Slot grid */}
-          <div ref={gridRef}>
-            {activeDay.slots.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-3 gap-y-1 max-w-xs">
-                {activeDay.slots.map((slot) => (
-                  <TimeSlotButton
-                    key={slot.start_utc}
-                    slot={slot}
-                    selected={slot.start_utc === selectedSlotUtc}
-                    onSelect={(s) => onSelect(activeDay, s)}
-                  />
-                ))}
+        {/* Right — day tabs + slot grid */}
+        <div>
+          {hasAnySlot ? (
+            <>
+              {/* Day tabs */}
+              <div className="flex overflow-x-auto mb-5 border-b border-cream/[0.08]">
+                {data.available_days.map((day) => {
+                  const [weekday, dayNum] = day.short_label.split(' ');
+                  const isActive = day.date === activeDay.date;
+                  const isToday = day.date === todayMadrid;
+                  const isEmpty = day.slots.length === 0;
+
+                  return (
+                    <button
+                      key={day.date}
+                      onClick={() => !isEmpty && setActiveDay(day)}
+                      disabled={isEmpty}
+                      className={[
+                        'flex flex-col items-center px-4 py-2 flex-none border-b-2 -mb-px',
+                        'transition-all duration-150 cursor-pointer',
+                        'disabled:opacity-25 disabled:cursor-default',
+                        isActive ? 'border-amber' : 'border-transparent hover:border-cream/20',
+                      ].join(' ')}
+                    >
+                      <span className={[
+                        'text-[9px] font-semibold uppercase tracking-widest mb-1',
+                        isToday ? 'text-amber' : 'text-subtle',
+                      ].join(' ')}>
+                        {isToday ? 'Hoy' : weekday}
+                      </span>
+                      <span className={[
+                        'text-xl font-bold leading-none',
+                        isActive ? 'text-cream' : isToday ? 'text-amber/60' : 'text-muted',
+                      ].join(' ')}>
+                        {dayNum}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
-              <p className="text-muted text-sm py-8">Sin disponibilidad este día.</p>
-            )}
-          </div>
-        </>
-      ) : (
-        <div className="py-16">
-          <p className="text-muted text-base mb-2">No hay disponibilidad en los próximos días.</p>
-          <p className="text-subtle text-sm">Contactanos directamente para buscar un horario.</p>
+
+              {/* Slot grid — no width constraint, fills the column */}
+              <div ref={gridRef}>
+                {activeDay.slots.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-3 gap-y-0.5">
+                    {activeDay.slots.map((slot) => (
+                      <TimeSlotButton
+                        key={slot.start_utc}
+                        slot={slot}
+                        selected={slot.start_utc === selectedSlotUtc}
+                        onSelect={(s) => onSelect(activeDay, s)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted text-sm py-6">Sin disponibilidad este día.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="py-12">
+              <p className="text-muted text-base mb-2">No hay disponibilidad en los próximos días.</p>
+              <p className="text-subtle text-sm">Contactanos directamente para buscar un horario.</p>
+            </div>
+          )}
         </div>
-      )}
+
+      </div>
     </div>
   );
 }
