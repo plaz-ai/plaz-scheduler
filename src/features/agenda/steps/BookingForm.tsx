@@ -8,6 +8,46 @@ import type { SelectedSlot, BookingPayload } from '../types';
 
 gsap.registerPlugin(useGSAP);
 
+interface FloatingInputProps {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+  autoComplete?: string;
+}
+
+function FloatingInput({ label, type, value, onChange, hint, autoComplete }: FloatingInputProps) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || value.length > 0;
+
+  return (
+    <div className={[
+      'relative pt-5 pb-1.5 border-b transition-colors duration-200',
+      focused ? 'border-amber' : 'border-cream/15',
+    ].join(' ')}>
+      <label className={[
+        'absolute left-0 pointer-events-none transition-all duration-200',
+        floated
+          ? 'top-0 text-[10px] text-amber tracking-widest uppercase font-medium'
+          : 'top-5 text-sm text-cream/35',
+      ].join(' ')}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={focused ? (hint ?? '') : ''}
+        autoComplete={autoComplete}
+        className="w-full bg-transparent text-cream text-base py-1 focus:outline-none placeholder:text-cream/20"
+      />
+    </div>
+  );
+}
+
 interface Props {
   selected: SelectedSlot;
   linkToken: string;
@@ -26,10 +66,10 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
   useGSAP(
     () => {
       gsap.from('.form-field', {
-        y: 16,
+        y: 14,
         opacity: 0,
-        duration: 0.4,
-        stagger: 0.08,
+        duration: 0.38,
+        stagger: 0.09,
         ease: 'power2.out',
       });
     },
@@ -56,62 +96,54 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
   }
 
   return (
-    <div ref={ref} className="step-panel max-w-md mx-auto">
+    <div ref={ref} className="step-panel max-w-md">
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98]"
+        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-10 cursor-pointer active:scale-[0.98]"
       >
         <CaretLeft className="w-4 h-4" weight="regular" />
         Cambiar horario
       </button>
 
-      {/* Selected slot summary */}
-      <div className="form-field p-4 rounded-2xl bg-amber-soft border border-amber/25 mb-8">
-        <p className="text-amber text-xs font-semibold uppercase tracking-wider mb-1">
-          Tu cita
-        </p>
-        <p className="text-cream font-semibold">{selected.day.label}</p>
-        <p className="text-cream/75 text-sm mt-0.5">
-          {selected.slot.start_madrid} · {durationMinutes} minutos
+      {/* Heading + slot summary */}
+      <div className="form-field mb-10">
+        <h2 className="font-display font-black text-5xl md:text-[clamp(3rem,6vw,4rem)] text-cream tracking-tighter leading-[0.92] mb-5">
+          Casi<br />listo.
+        </h2>
+        <p className="text-muted text-sm leading-relaxed">
+          <span className="text-cream font-medium">{selected.day.label}</span>
+          <span className="text-subtle mx-2">·</span>
+          <span className="font-mono text-amber">{selected.slot.start_madrid}</span>
+          <span className="text-subtle mx-2">·</span>
+          {durationMinutes}&thinsp;min
         </p>
       </div>
 
-      <h2 className="form-field font-display text-3xl text-cream mb-1">Casi listo</h2>
-      <p className="form-field text-muted text-sm mb-8">
-        Solo necesitamos tus datos para confirmar la reserva
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <div className="form-field">
-          <label className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
-            Nombre completo
-          </label>
-          <input
+          <FloatingInput
+            label="Nombre completo"
             type="text"
-            required
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ej: María García"
-            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/25 transition-all"
+            onChange={setName}
+            hint="María García"
+            autoComplete="name"
           />
         </div>
 
         <div className="form-field">
-          <label className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
-            Email
-          </label>
-          <input
+          <FloatingInput
+            label="Email"
             type="email"
-            required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="maria@ejemplo.com"
-            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/25 transition-all"
+            onChange={setEmail}
+            hint="maria@ejemplo.com"
+            autoComplete="email"
           />
         </div>
 
         {error && (
-          <p className="form-field text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
+          <p className="form-field text-red-400 text-sm border-l-2 border-red-400/40 pl-3 py-0.5">
             {error}
           </p>
         )}
@@ -119,10 +151,10 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         <button
           type="submit"
           disabled={isSubmitting}
-          className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-60 disabled:cursor-not-allowed text-navy font-semibold py-4 rounded-xl transition-colors duration-200 text-sm cursor-pointer mt-2 active:scale-[0.98]"
+          className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-navy font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98] mt-2"
         >
           {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
+            <span className="inline-flex items-center justify-center gap-2">
               <CircleNotch className="w-4 h-4 animate-spin" weight="bold" />
               Confirmando...
             </span>
