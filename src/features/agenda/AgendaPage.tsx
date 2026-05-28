@@ -139,23 +139,31 @@ export default function AgendaPage({ token }: Props) {
         {/* Content */}
         <main ref={containerRef} className="flex-1 relative z-10 px-6 md:px-8 lg:px-10 py-8 md:py-10">
 
-          {/* Loading skeleton */}
+          {/* Loading skeleton — matches calendar layout */}
           {!data && !loadError && (
-            <div className="step-panel space-y-6 pt-2">
-              <div className="h-14 w-52 bg-navy-mid rounded animate-pulse" />
-              <div className="h-3 w-32 bg-navy-mid rounded animate-pulse" />
-              <div className="flex gap-3 mt-10 border-b border-cream/[0.08] pb-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-1.5 px-3">
-                    <div className="h-2 w-5 bg-navy-mid rounded animate-pulse" />
-                    <div className="h-7 w-7 bg-navy-mid rounded animate-pulse" />
-                  </div>
-                ))}
+            <div className="step-panel">
+              <div className="mb-8 space-y-3">
+                <div className="h-12 w-48 bg-navy-mid rounded animate-pulse" />
+                <div className="h-3 w-24 bg-navy-mid rounded animate-pulse" />
               </div>
-              <div className="grid grid-cols-3 gap-2 max-w-xs">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-10 bg-navy-mid rounded animate-pulse" />
-                ))}
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:max-w-[300px] flex-none md:pr-8">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-8 h-8 bg-navy-mid rounded-lg animate-pulse" />
+                    <div className="h-3 w-24 bg-navy-mid rounded animate-pulse" />
+                    <div className="w-8 h-8 bg-navy-mid rounded-lg animate-pulse" />
+                  </div>
+                  <div className="grid grid-cols-7 gap-0.5">
+                    {[...Array(35)].map((_, i) => (
+                      <div key={i} className="aspect-square rounded-lg bg-navy-mid animate-pulse" style={{ opacity: i < 4 ? 0 : 0.5 }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="hidden md:block md:pl-8 md:max-w-[220px] w-full space-y-1.5 pt-10">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-9 bg-navy-mid rounded-lg animate-pulse" style={{ opacity: 0.4 }} />
+                  ))}
+                </div>
               </div>
             </div>
           )}
