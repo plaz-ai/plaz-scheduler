@@ -79,7 +79,7 @@ export default function AgendaPage({ token }: Props) {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="min-h-[100dvh] flex flex-col"
       style={{
         background: `
           radial-gradient(ellipse at 70% 0%, rgba(27, 53, 83, 0.55) 0%, transparent 55%),
@@ -90,7 +90,9 @@ export default function AgendaPage({ token }: Props) {
     >
       {/* Header */}
       <header className="flex-none px-6 pt-6 pb-4 flex items-center justify-between max-w-4xl mx-auto w-full">
-        <span className="font-display text-cream text-xl tracking-tight">Plaz</span>
+        <span className="font-display text-cream text-xl font-semibold tracking-tight">
+          Plaz<span className="text-amber">.</span>
+        </span>
 
         {/* Step dots */}
         <div className="flex items-center gap-2">
@@ -138,8 +140,20 @@ export default function AgendaPage({ token }: Props) {
           </div>
         )}
 
+        {/* Link expired / exhausted */}
+        {data && (data.link_expired || data.link_exhausted) && (
+          <div className="step-panel py-20 text-center">
+            <p className="text-cream text-base mb-2">
+              {data.link_expired
+                ? 'Este link de agenda ha expirado.'
+                : 'Este link ya no tiene citas disponibles.'}
+            </p>
+            <p className="text-subtle text-sm">Contactanos directamente para coordinar una cita.</p>
+          </div>
+        )}
+
         {/* Step 1 — slot picker */}
-        {data && step === 1 && (
+        {data && !data.link_expired && !data.link_exhausted && step === 1 && (
           <SlotPicker
             data={data}
             selectedSlotUtc={selected?.slot.start_utc}
@@ -148,7 +162,7 @@ export default function AgendaPage({ token }: Props) {
         )}
 
         {/* Step 2 — booking form */}
-        {data && step === 2 && selected && (
+        {data && !data.link_expired && !data.link_exhausted && step === 2 && selected && (
           <BookingForm
             selected={selected}
             linkToken={token}

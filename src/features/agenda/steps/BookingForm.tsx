@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { CaretLeft, CircleNotch } from '@phosphor-icons/react';
 import type { SelectedSlot, BookingPayload } from '../types';
 
 gsap.registerPlugin(useGSAP);
@@ -58,11 +59,9 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
     <div ref={ref} className="step-panel max-w-md mx-auto">
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer"
+        className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98]"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
+        <CaretLeft className="w-4 h-4" weight="regular" />
         Cambiar horario
       </button>
 
@@ -93,7 +92,7 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: María García"
-            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/10 transition-all"
+            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/25 transition-all"
           />
         </div>
 
@@ -107,7 +106,7 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="maria@ejemplo.com"
-            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/10 transition-all"
+            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/25 transition-all"
           />
         </div>
 
@@ -120,14 +119,11 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         <button
           type="submit"
           disabled={isSubmitting}
-          className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-60 disabled:cursor-not-allowed text-navy font-semibold py-4 rounded-xl transition-colors duration-200 text-sm cursor-pointer mt-2"
+          className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-60 disabled:cursor-not-allowed text-navy font-semibold py-4 rounded-xl transition-colors duration-200 text-sm cursor-pointer mt-2 active:scale-[0.98]"
         >
           {isSubmitting ? (
             <span className="inline-flex items-center gap-2">
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <CircleNotch className="w-4 h-4 animate-spin" weight="bold" />
               Confirmando...
             </span>
           ) : (
