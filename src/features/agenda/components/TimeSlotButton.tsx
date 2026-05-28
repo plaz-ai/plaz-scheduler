@@ -13,11 +13,12 @@ export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
     <button
       onClick={() => onSelect(slot)}
       className={[
-        'w-full py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98]',
-        'border focus:outline-none focus-visible:ring-2 focus-visible:ring-amber/60',
+        'slot-btn w-full py-2.5 px-1 text-sm font-mono text-center',
+        'border-b transition-all duration-150 cursor-pointer active:scale-[0.97]',
+        'focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50',
         selected
-          ? 'bg-amber border-amber text-navy font-semibold shadow-lg shadow-amber/20'
-          : 'bg-navy-light/50 border-amber-dim text-cream/75 hover:bg-navy-light hover:border-amber/35 hover:text-cream hover:scale-[1.02]',
+          ? 'text-amber border-amber font-semibold'
+          : 'text-cream/55 border-cream/[0.08] hover:text-cream hover:border-cream/25',
       ].join(' ')}
     >
       {slot.start_madrid}

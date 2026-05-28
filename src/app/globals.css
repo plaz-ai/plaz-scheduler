@@ -21,6 +21,7 @@
   /* Typography */
   --font-display:       var(--font-geist);
   --font-sans:          var(--font-plus-jakarta);
+  --font-mono:          var(--font-geist-mono);
 }
 
 *, *::before, *::after {
@@ -38,7 +39,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Thin amber scrollbar for slot columns */
-.scrollbar-amber::-webkit-scrollbar { height: 3px; }
-.scrollbar-amber::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-amber::-webkit-scrollbar-thumb { background: rgba(232, 162, 74, 0.3); border-radius: 99px; }
+/* Dot grid background for right panel */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(250, 247, 242, 0.055) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
