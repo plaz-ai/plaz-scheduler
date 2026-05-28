@@ -137,7 +137,7 @@ export default function AgendaPage({ token }: Props) {
         </div>
 
         {/* Content */}
-        <main ref={containerRef} className="flex-1 relative z-10 px-6 md:px-12 lg:px-16 py-8 md:py-12">
+        <main ref={containerRef} className="flex-1 relative z-10 px-6 md:px-8 lg:px-10 py-8 md:py-10">
 
           {/* Loading skeleton */}
           {!data && !loadError && (
@@ -205,7 +205,7 @@ export default function AgendaPage({ token }: Props) {
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 px-6 md:px-12 lg:px-16 pb-6 md:pb-8">
+        <footer className="relative z-10 px-6 md:px-8 lg:px-10 pb-6 md:pb-8">
           <p className="text-subtle text-[10px]">
             Horas en horario de Madrid · Plaz {new Date().getFullYear()}
           </p>
