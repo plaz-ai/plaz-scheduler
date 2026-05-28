@@ -19,7 +19,7 @@
   --color-subtle:       rgb(250 247 242 / 0.25);
 
   /* Typography */
-  --font-display:       var(--font-fraunces);
+  --font-display:       var(--font-geist);
   --font-sans:          var(--font-plus-jakarta);
 }
 

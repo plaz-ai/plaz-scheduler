@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { Fraunces } from 'next/font/google';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Geist, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
-const fraunces = Fraunces({
-  variable: '--font-fraunces',
+const geist = Geist({
+  variable: '--font-geist',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${fraunces.variable} ${plusJakarta.variable} h-full`}>
+    <html lang="es" className={`${geist.variable} ${plusJakarta.variable} h-full`}>
       <body className="min-h-full">{children}</body>
     </html>
   );
