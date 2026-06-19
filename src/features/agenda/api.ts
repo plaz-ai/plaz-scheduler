@@ -12,7 +12,10 @@ function delay<T>(value: T, ms = 500): Promise<T> {
 }
 
 export async function fetchAvailability(linkToken: string): Promise<AvailabilityResponse> {
-  if (USE_MOCK) return delay(mockAvailability());
+  if (USE_MOCK) {
+    if (linkToken.includes('error')) { await delay(null, 400); throw new Error('mock: fallo de red'); }
+    return delay(mockAvailability(linkToken));
+  }
 
   const res = await fetch(
     `${BASE}/webhook/plaz-scheduler-get-availability?link_token=${encodeURIComponent(linkToken)}`,
@@ -26,7 +29,10 @@ export async function fetchAvailability(linkToken: string): Promise<Availability
 }
 
 export async function createBooking(payload: BookingPayload): Promise<BookingResult> {
-  if (USE_MOCK) return delay(mockBooking(payload));
+  if (USE_MOCK) {
+    if (payload.link_token.includes('bookfail')) { await delay(null, 400); throw new Error('mock: fallo al reservar'); }
+    return delay(mockBooking(payload));
+  }
 
   const res = await fetch(`${BASE}/webhook/plaz-scheduler-booking`, {
     method: 'POST',

@@ -38,7 +38,14 @@ function buildDay(date: Date): AvailableDay {
   };
 }
 
-export function mockAvailability(): AvailabilityResponse {
+export function mockAvailability(linkToken = ''): AvailabilityResponse {
+  const base = { team_name: 'Juana Gil', duration_minutes: DURATION_MINUTES };
+
+  // Estados de prueba según el token (solo en modo mock).
+  if (linkToken.includes('expired')) return { ...base, available_days: [], link_expired: true };
+  if (linkToken.includes('exhausted')) return { ...base, available_days: [], link_exhausted: true };
+  if (linkToken.includes('empty')) return { ...base, available_days: [] };
+
   const days: AvailableDay[] = [];
   const cursor = new Date();
   cursor.setHours(0, 0, 0, 0);
@@ -51,11 +58,7 @@ export function mockAvailability(): AvailabilityResponse {
     days.push(buildDay(new Date(cursor)));
   }
 
-  return {
-    team_name: 'Juana Gil',
-    duration_minutes: DURATION_MINUTES,
-    available_days: days,
-  };
+  return { ...base, available_days: days };
 }
 
 export function mockBooking(payload: BookingPayload): BookingResult {
@@ -69,6 +72,6 @@ export function mockBooking(payload: BookingPayload): BookingResult {
     start_madrid: start.toLocaleString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
     }),
-    cancel_url: `/cancelar/${cancelToken}`,
+    cancel_url: `/cancelar/?token=${cancelToken}`,
   };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import type { BookingResult } from '../types';
@@ -97,12 +98,12 @@ export default function SuccessScreen({ booking }: Props) {
         </div>
       </div>
 
-      <a
+      <Link
         href={booking.cancel_url}
         className="cancel-link text-subtle text-xs hover:text-muted transition-colors underline underline-offset-2"
       >
         Cancelar esta reserva
-      </a>
+      </Link>
     </div>
   );
 }

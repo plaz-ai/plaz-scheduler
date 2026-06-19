@@ -130,8 +130,20 @@ export default function AgendaPage({ token }: Props) {
           </div>
         )}
 
+        {/* Step 1 — enlace caducado o agotado */}
+        {data && step === 1 && (data.link_expired || data.link_exhausted) && (
+          <div className="step-panel py-20 text-center">
+            <p className="text-cream text-lg mb-2">
+              {data.link_expired ? 'Este enlace ha caducado' : 'Este enlace ya se ha utilizado'}
+            </p>
+            <p className="text-subtle text-sm">
+              Solicítanos un nuevo enlace para agendar tu cita.
+            </p>
+          </div>
+        )}
+
         {/* Step 1 — slot picker */}
-        {data && step === 1 && (
+        {data && step === 1 && !data.link_expired && !data.link_exhausted && (
           <SlotPicker
             data={data}
             selectedSlotUtc={selected?.slot.start_utc}

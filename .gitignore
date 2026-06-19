@@ -7,6 +7,10 @@
 /.next/
 /out/
 
+# verificación local (build estático servido + capturas playwright)
+/_serve/
+/.playwright-mcp/
+
 # env
 .env*.local
 .env

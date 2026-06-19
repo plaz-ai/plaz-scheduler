@@ -158,12 +158,13 @@ export default function CancelPage({ token }: Props) {
               )}
             </button>
 
-            <a
-              href="/"
-              className="block text-center text-subtle text-xs hover:text-muted transition-colors underline underline-offset-2 mt-5"
+            <button
+              type="button"
+              onClick={() => window.history.back()}
+              className="block w-full text-center text-subtle text-xs hover:text-muted transition-colors underline underline-offset-2 mt-5 cursor-pointer"
             >
               No, mantener la cita
-            </a>
+            </button>
           </div>
         )}
         </div>
