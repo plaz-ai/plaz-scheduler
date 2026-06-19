@@ -1,8 +1,8 @@
-name: Deploy demo to GitHub Pages
+name: Deploy to GitHub Pages (producción)
 
 on:
   push:
-    branches: [demo]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
