@@ -103,21 +103,16 @@ export default function AgendaPage({ token }: Props) {
 
       {/* Content */}
       <main ref={containerRef} className="flex-1 flex flex-col px-6 py-8 w-full">
-        <div className="m-auto w-full max-w-3xl">
+        <div className="m-auto w-full max-w-4xl">
         {/* Loading */}
         {!data && !loadError && (
           <div className="step-panel space-y-4 pt-4">
-            <div className="h-8 w-64 bg-navy-mid rounded-xl animate-pulse" />
-            <div className="h-4 w-48 bg-navy-mid rounded-lg animate-pulse" />
-            <div className="flex gap-4 mt-8">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex-none w-40 space-y-2">
-                  <div className="h-14 bg-navy-mid rounded-xl animate-pulse" />
-                  {[...Array(3)].map((_, j) => (
-                    <div key={j} className="h-10 bg-navy-mid rounded-xl animate-pulse" />
-                  ))}
-                </div>
-              ))}
+            <div className="h-8 w-64 bg-navy-mid rounded-xl animate-pulse mx-auto sm:mx-0" />
+            <div className="h-4 w-48 bg-navy-mid rounded-lg animate-pulse mx-auto sm:mx-0" />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+              <div className="h-28 bg-navy-mid rounded-2xl animate-pulse" />
+              <div className="h-72 bg-navy-mid rounded-2xl animate-pulse" />
+              <div className="h-72 bg-navy-mid rounded-2xl animate-pulse" />
             </div>
           </div>
         )}

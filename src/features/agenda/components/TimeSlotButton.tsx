@@ -13,7 +13,7 @@ export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
     <button
       onClick={() => onSelect(slot)}
       className={[
-        'w-full py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',
+        'w-full py-3 px-3 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',
         'border focus:outline-none focus-visible:ring-2 focus-visible:ring-amber/60',
         selected
           ? 'bg-amber border-amber text-navy font-semibold shadow-lg shadow-amber/20'
