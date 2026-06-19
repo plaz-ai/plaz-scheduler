@@ -21,8 +21,11 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
   const days = data.available_days;
   const availableDates = new Set(days.map((d) => d.date));
   const firstDate = days[0]?.date ?? null;
+  // Si ya había un horario elegido (volver atrás desde el paso 2), abrir su día.
+  const preselectedDate =
+    days.find((d) => d.slots.some((s) => s.start_utc === selectedSlotUtc))?.date ?? firstDate;
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(firstDate);
+  const [selectedDate, setSelectedDate] = useState<string | null>(preselectedDate);
   const selectedDay = days.find((d) => d.date === selectedDate) ?? null;
 
   // Anima la lista de horarios cada vez que cambia el día elegido (respeta reduce-motion).
@@ -66,12 +69,12 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-soft border border-amber/30 flex items-center justify-center flex-none">
                 <span className="text-amber font-semibold text-sm">
-                  {data.team_name.charAt(0).toUpperCase()}
+                  {(data.team_name.trim()[0] ?? '·').toUpperCase()}
                 </span>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-subtle text-[11px] uppercase tracking-wider">Tu consultor</p>
-                <p className="text-cream font-medium text-sm">{data.team_name}</p>
+                <p className="text-cream font-medium text-sm truncate">{data.team_name}</p>
               </div>
             </div>
 
@@ -108,7 +111,7 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
             {selectedDay ? (
               <>
                 <p className="text-cream text-sm font-medium mb-3 first-letter:uppercase">{selectedDay.label}</p>
-                <div className="grid grid-cols-3 @md:grid-cols-1 gap-2 @md:max-h-[22rem] @md:overflow-y-auto @md:pr-1">
+                <div className="grid grid-cols-3 @md:grid-cols-1 gap-2">
                   {selectedDay.slots.map((slot) => (
                     <div key={slot.start_utc} className="time-option">
                       <TimeSlotButton

@@ -11,6 +11,7 @@ interface Props {
 export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
   return (
     <button
+      type="button"
       onClick={() => onSelect(slot)}
       className={[
         'w-full py-3 px-3 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',

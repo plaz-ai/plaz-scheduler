@@ -18,6 +18,10 @@ export default function SuccessScreen({ booking }: Props) {
 
   useGSAP(
     () => {
+      const reduce =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) return;
       const tl = gsap.timeline();
       tl.from(checkRef.current, {
         scale: 0,
@@ -59,9 +63,9 @@ export default function SuccessScreen({ booking }: Props) {
         </div>
       </div>
 
-      <h2 className="success-title font-display text-4xl text-cream mb-2">
+      <h1 className="success-title font-display text-4xl text-cream mb-2">
         ¡Reserva confirmada!
-      </h2>
+      </h1>
       <p className="success-sub text-muted text-sm mb-10">
         Recibirás los detalles en tu email en breve
       </p>
@@ -93,7 +97,7 @@ export default function SuccessScreen({ booking }: Props) {
           </div>
           <div>
             <p className="text-subtle text-xs uppercase tracking-wider mb-0.5">Tu consultor</p>
-            <p className="text-cream font-medium">{booking.host_name}</p>
+            <p className="text-cream font-medium break-words">{booking.host_name}</p>
           </div>
         </div>
       </div>
