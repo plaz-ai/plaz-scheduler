@@ -24,6 +24,10 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
 
   useGSAP(
     () => {
+      const reduce =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) return;
       gsap.from('.form-field', {
         y: 16,
         opacity: 0,
@@ -37,6 +41,12 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+    if (!cleanName || !cleanEmail) {
+      setError('Escribe tu nombre y tu email para confirmar.');
+      return;
+    }
     setError(null);
     setIsSubmitting(true);
     try {
@@ -44,8 +54,8 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         link_token: linkToken,
         slot_utc: selected.slot.start_utc,
         duration_minutes: durationMinutes,
-        booker_name: name.trim(),
-        booker_email: email.trim(),
+        booker_name: cleanName,
+        booker_email: cleanEmail,
       });
     } catch {
       setError('No pudimos confirmar la reserva. Intenta de nuevo.');
@@ -57,6 +67,7 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
   return (
     <div ref={ref} className="step-panel max-w-md mx-auto">
       <button
+        type="button"
         onClick={onBack}
         className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer"
       >
@@ -77,17 +88,18 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         </p>
       </div>
 
-      <h2 className="form-field font-display text-3xl text-cream mb-1">Casi listo</h2>
+      <h1 className="form-field font-display text-3xl text-cream mb-1">Casi listo</h1>
       <p className="form-field text-muted text-sm mb-8">
         Solo necesitamos tus datos para confirmar la reserva
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="form-field">
-          <label className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
+          <label htmlFor="booker-name" className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
             Nombre completo
           </label>
           <input
+            id="booker-name"
             type="text"
             required
             value={name}
@@ -98,10 +110,11 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         </div>
 
         <div className="form-field">
-          <label className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
+          <label htmlFor="booker-email" className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
             Email
           </label>
           <input
+            id="booker-email"
             type="email"
             required
             value={email}
@@ -112,7 +125,7 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         </div>
 
         {error && (
-          <p className="form-field text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
+          <p role="alert" className="form-field text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
             {error}
           </p>
         )}

@@ -39,6 +39,13 @@ export default function AgendaPage({ token }: Props) {
     () => {
       const panel = containerRef.current?.querySelector('.step-panel');
       if (!panel) return;
+      const reduce =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) {
+        gsap.set(panel, { opacity: 1, y: 0 });
+        return;
+      }
       gsap.fromTo(
         panel,
         { opacity: 0, y: 18 },
@@ -56,7 +63,10 @@ export default function AgendaPage({ token }: Props) {
 
   function animateOut(next: Step) {
     const panel = containerRef.current?.querySelector('.step-panel');
-    if (!panel) { setStep(next); return; }
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!panel || reduce) { setStep(next); return; }
     gsap.to(panel, {
       opacity: 0,
       y: -12,
@@ -83,22 +93,24 @@ export default function AgendaPage({ token }: Props) {
       <header className="flex-none px-6 pt-6 pb-4 flex items-center justify-between max-w-4xl mx-auto w-full">
         <span className="font-display text-cream text-xl tracking-tight">Plaz</span>
 
-        {/* Step dots */}
-        <div className="flex items-center gap-2">
-          {([1, 2, 3] as Step[]).map((s) => (
-            <div
-              key={s}
-              className={[
-                'rounded-full transition-all duration-300',
-                s === step
-                  ? 'w-6 h-2 bg-amber'
-                  : s < step
-                  ? 'w-2 h-2 bg-amber/60'
-                  : 'w-2 h-2 bg-navy-card',
-              ].join(' ')}
-            />
-          ))}
-        </div>
+        {/* Step dots — ocultos en estados terminales (sin flujo que indicar) */}
+        {!loadError && !(data && (data.link_expired || data.link_exhausted)) && (
+          <div className="flex items-center gap-2">
+            {([1, 2, 3] as Step[]).map((s) => (
+              <div
+                key={s}
+                className={[
+                  'rounded-full transition-all duration-300',
+                  s === step
+                    ? 'w-6 h-2 bg-amber'
+                    : s < step
+                    ? 'w-2 h-2 bg-amber/60'
+                    : 'w-2 h-2 bg-navy-card',
+                ].join(' ')}
+              />
+            ))}
+          </div>
+        )}
       </header>
 
       {/* Content */}
@@ -119,7 +131,7 @@ export default function AgendaPage({ token }: Props) {
 
         {/* Error */}
         {loadError && (
-          <div className="step-panel py-20 text-center">
+          <div role="alert" className="step-panel py-20 text-center">
             <p className="text-red-400 text-base mb-2">{loadError}</p>
             <p className="text-subtle text-sm">Si el problema persiste, contactanos directamente.</p>
           </div>

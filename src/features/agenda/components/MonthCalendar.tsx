@@ -99,7 +99,8 @@ export default function MonthCalendar({ availableDates, selectedDate, onSelectDa
               type="button"
               disabled={!available}
               onClick={() => onSelectDate(iso)}
-              aria-pressed={selected}
+              aria-pressed={available ? selected : undefined}
+              aria-current={selected ? 'date' : undefined}
               aria-label={available ? `Día ${day}, disponible` : `Día ${day}, sin disponibilidad`}
               className={[
                 'relative h-11 w-full rounded-lg text-sm flex items-center justify-center transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber/60',

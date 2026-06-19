@@ -20,6 +20,7 @@ export default function CancelPage({ token }: Props) {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [kept, setKept] = useState(false);
 
   useEffect(() => {
     fetchCancelDetails(token)
@@ -31,9 +32,16 @@ export default function CancelPage({ token }: Props) {
     () => {
       const panel = containerRef.current?.querySelector('.cancel-panel');
       if (!panel) return;
+      const reduce =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) {
+        gsap.set(panel, { opacity: 1, y: 0 });
+        return;
+      }
       gsap.fromTo(panel, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
     },
-    { scope: containerRef, dependencies: [details, loadError, done] }
+    { scope: containerRef, dependencies: [details, loadError, done, kept] }
   );
 
   async function handleCancel() {
@@ -70,7 +78,7 @@ export default function CancelPage({ token }: Props) {
 
         {/* Error de carga */}
         {loadError && (
-          <div className="cancel-panel py-20 text-center max-w-md">
+          <div role="alert" className="cancel-panel py-20 text-center max-w-md">
             <p className="text-red-400 text-base mb-2">{loadError}</p>
             <p className="text-subtle text-sm">Si crees que es un error, contáctanos directamente.</p>
           </div>
@@ -86,7 +94,7 @@ export default function CancelPage({ token }: Props) {
                 </svg>
               </div>
             </div>
-            <h2 className="font-display text-3xl text-cream mb-2">Reserva cancelada</h2>
+            <h1 className="font-display text-3xl text-cream mb-2">Reserva cancelada</h1>
             <p className="text-muted text-sm">
               {done
                 ? 'Tu cita ha sido cancelada. Puedes reservar una nueva cuando quieras.'
@@ -95,8 +103,16 @@ export default function CancelPage({ token }: Props) {
           </div>
         )}
 
+        {/* Cita mantenida (el usuario decidió no cancelar) */}
+        {details && kept && !showCancelled && (
+          <div className="cancel-panel text-center max-w-md mx-auto pt-6">
+            <h1 className="font-display text-3xl text-cream mb-2">Tu cita sigue en pie</h1>
+            <p className="text-muted text-sm">No hemos cancelado nada. Te esperamos a la hora reservada.</p>
+          </div>
+        )}
+
         {/* Confirmada — ofrecer cancelar */}
-        {details && !showCancelled && (
+        {details && !showCancelled && !kept && (
           <div className="cancel-panel w-full max-w-md mx-auto pt-4">
             <h1 className="font-display text-3xl text-cream mb-1 text-center">¿Cancelar tu cita?</h1>
             <p className="text-muted text-sm mb-8 text-center">
@@ -129,13 +145,13 @@ export default function CancelPage({ token }: Props) {
                 </div>
                 <div>
                   <p className="text-subtle text-xs uppercase tracking-wider mb-0.5">Tu consultor</p>
-                  <p className="text-cream font-medium">{details.host_name}</p>
+                  <p className="text-cream font-medium break-words">{details.host_name}</p>
                 </div>
               </div>
             </div>
 
             {cancelError && (
-              <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3 mb-4">
+              <p role="alert" className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3 mb-4">
                 {cancelError}
               </p>
             )}
@@ -160,7 +176,7 @@ export default function CancelPage({ token }: Props) {
 
             <button
               type="button"
-              onClick={() => window.history.back()}
+              onClick={() => setKept(true)}
               className="block w-full text-center text-subtle text-xs hover:text-muted transition-colors underline underline-offset-2 mt-5 cursor-pointer"
             >
               No, mantener la cita
