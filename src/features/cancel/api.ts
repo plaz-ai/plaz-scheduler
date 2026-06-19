@@ -20,12 +20,15 @@ function mockDetails(cancelToken: string): CancelDetails {
     }),
     duration_minutes: 30,
     booker_name: 'María García',
-    status: 'confirmed',
+    status: cancelToken.includes('cancelled') ? 'cancelled' : 'confirmed',
   };
 }
 
 export async function fetchCancelDetails(cancelToken: string): Promise<CancelDetails> {
-  if (USE_MOCK) return delay(mockDetails(cancelToken));
+  if (USE_MOCK) {
+    if (cancelToken.includes('invalid')) { await delay(null, 400); throw new Error('mock: enlace inválido'); }
+    return delay(mockDetails(cancelToken));
+  }
 
   const res = await fetch(
     `${BASE}/webhook/plaz-scheduler-cancel-details?cancel_token=${encodeURIComponent(cancelToken)}`,
@@ -39,7 +42,10 @@ export async function fetchCancelDetails(cancelToken: string): Promise<CancelDet
 }
 
 export async function cancelBooking(cancelToken: string): Promise<CancelResult> {
-  if (USE_MOCK) return delay({ status: 'cancelled' });
+  if (USE_MOCK) {
+    if (cancelToken.includes('cancelfail')) { await delay(null, 400); throw new Error('mock: fallo al cancelar'); }
+    return delay({ status: 'cancelled' });
+  }
 
   const res = await fetch(`${BASE}/webhook/plaz-scheduler-cancel`, {
     method: 'POST',
