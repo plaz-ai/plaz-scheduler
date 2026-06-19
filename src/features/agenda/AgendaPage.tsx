@@ -78,16 +78,7 @@ export default function AgendaPage({ token }: Props) {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{
-        background: `
-          radial-gradient(ellipse at 70% 0%, rgba(27, 53, 83, 0.55) 0%, transparent 55%),
-          radial-gradient(ellipse at 10% 100%, rgba(232, 162, 74, 0.04) 0%, transparent 45%),
-          #0A1628
-        `,
-      }}
-    >
+    <div className="min-h-screen flex flex-col bg-navy">
       {/* Header */}
       <header className="flex-none px-6 pt-6 pb-4 flex items-center justify-between max-w-4xl mx-auto w-full">
         <span className="font-display text-cream text-xl tracking-tight">Plaz</span>
@@ -111,7 +102,8 @@ export default function AgendaPage({ token }: Props) {
       </header>
 
       {/* Content */}
-      <main ref={containerRef} className="flex-1 px-6 py-8 max-w-4xl mx-auto w-full">
+      <main ref={containerRef} className="flex-1 flex flex-col px-6 py-8 w-full">
+        <div className="m-auto w-full max-w-3xl">
         {/* Loading */}
         {!data && !loadError && (
           <div className="step-panel space-y-4 pt-4">
@@ -160,6 +152,7 @@ export default function AgendaPage({ token }: Props) {
 
         {/* Step 3 — success */}
         {step === 3 && booking && <SuccessScreen booking={booking} />}
+        </div>
       </main>
 
       {/* Footer */}

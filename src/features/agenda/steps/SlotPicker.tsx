@@ -34,7 +34,7 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
 
   return (
     <div ref={ref} className="step-panel">
-      <div className="mb-6">
+      <div className="mb-6 text-center">
         <h1 className="font-display text-4xl text-cream mb-2 leading-tight">
           Elige tu fecha y hora
         </h1>
@@ -43,15 +43,17 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
         </p>
       </div>
 
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-soft border border-amber-dim mb-8">
-        <svg className="w-3.5 h-3.5 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-        </svg>
-        <span className="text-amber text-xs font-medium">{data.duration_minutes} minutos por cita</span>
+      <div className="flex justify-center mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-soft border border-amber-dim">
+          <svg className="w-3.5 h-3.5 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+          </svg>
+          <span className="text-amber text-xs font-medium">{data.duration_minutes} minutos por cita</span>
+        </div>
       </div>
 
       {hasAnySlot ? (
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-amber -mx-1 px-1">
+        <div className="flex flex-wrap justify-center gap-4">
           {data.available_days.map((day) => (
             <DayColumn
               key={day.date}
