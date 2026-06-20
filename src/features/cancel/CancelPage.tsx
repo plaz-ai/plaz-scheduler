@@ -61,12 +61,16 @@ export default function CancelPage({ token }: Props) {
   const showCancelled = done || alreadyCancelled;
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy">
-      <header className="flex-none px-6 pt-6 pb-4 max-w-4xl mx-auto w-full">
-        <span className="font-display text-cream text-xl tracking-tight">Plaz</span>
+    <div className="min-h-screen flex flex-col bg-navy relative overflow-hidden">
+      <div className="absolute inset-0 dot-grid pointer-events-none" aria-hidden="true" />
+
+      <header className="relative z-10 flex-none px-6 pt-6 pb-4 max-w-4xl mx-auto w-full">
+        <span className="font-display text-xl font-black tracking-tight text-cream select-none">
+          Plaz<span className="text-amber">.</span>
+        </span>
       </header>
 
-      <main ref={containerRef} className="flex-1 flex flex-col px-6 py-8 w-full">
+      <main ref={containerRef} className="relative z-10 flex-1 flex flex-col px-6 py-8 w-full">
         <div className="m-auto w-full max-w-md">
         {/* Loading */}
         {!details && !loadError && (
@@ -186,7 +190,7 @@ export default function CancelPage({ token }: Props) {
         </div>
       </main>
 
-      <footer className="flex-none text-center pb-6 px-6">
+      <footer className="relative z-10 flex-none text-center pb-6 px-6">
         <p className="text-subtle text-xs">
           Todas las horas son en horario de Madrid · Plaz {new Date().getFullYear()}
         </p>

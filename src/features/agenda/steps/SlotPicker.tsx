@@ -3,8 +3,9 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { Clock } from '@phosphor-icons/react';
 import type { AvailabilityResponse, AvailableDay, TimeSlot } from '../types';
-import MonthCalendar from '../components/MonthCalendar';
+import CalendarGrid from '../components/CalendarGrid';
 import TimeSlotButton from '../components/TimeSlotButton';
 
 gsap.registerPlugin(useGSAP);
@@ -16,117 +17,92 @@ interface Props {
 }
 
 export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
+  const slotsRef = useRef<HTMLDivElement>(null);
+  const [activeDay, setActiveDay] = useState<AvailableDay | null>(null);
 
-  const days = data.available_days;
-  const availableDates = new Set(days.map((d) => d.date));
-  const firstDate = days[0]?.date ?? null;
-  // Si ya había un horario elegido (volver atrás desde el paso 2), abrir su día.
-  const preselectedDate =
-    days.find((d) => d.slots.some((s) => s.start_utc === selectedSlotUtc))?.date ?? firstDate;
-
-  const [selectedDate, setSelectedDate] = useState<string | null>(preselectedDate);
-  const selectedDay = days.find((d) => d.date === selectedDate) ?? null;
-
-  // Anima la lista de horarios cada vez que cambia el día elegido (respeta reduce-motion).
+  // Slots animate in whenever the active day changes — fast x-slide, cleared after
   useGSAP(
     () => {
-      const reduce =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduce) return;
-      gsap.from('.time-option', {
-        y: 10,
-        opacity: 0,
-        duration: 0.3,
-        stagger: 0.04,
-        ease: 'power2.out',
-      });
+      if (!activeDay) return;
+      gsap.fromTo(
+        '.slot-btn',
+        { opacity: 0, x: 10 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.18,
+          stagger: 0.028,
+          ease: 'power2.out',
+          clearProps: 'all',
+        }
+      );
     },
-    { scope: ref, dependencies: [selectedDate] }
+    { scope: slotsRef, dependencies: [activeDay?.date], revertOnUpdate: true }
   );
 
-  const hasAny = days.length > 0;
+  const hasAnySlot = data.available_days.some(d => d.slots.length > 0);
 
   return (
-    <div ref={ref} className="step-panel @container">
-      <div className="mb-6 text-center @3xl:text-left">
-        <h1 className="font-display text-3xl @md:text-4xl text-cream mb-1 leading-tight">
-          Elige tu fecha y hora
+    <div className="step-panel">
+      {/* Heading */}
+      <div className="mb-6 md:mb-8">
+        <h1 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-3">
+          Elige tu<br />fecha.
         </h1>
-        <p className="text-muted text-sm">Horario de Madrid (Europa/Madrid)</p>
+        <div className="flex items-center gap-2">
+          <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
+          <span className="text-muted text-xs">{data.duration_minutes} min · Madrid</span>
+        </div>
       </div>
 
-      {!hasAny ? (
-        <div className="py-16 text-center">
-          <p className="text-muted text-base">No hay disponibilidad en los próximos días.</p>
-          <p className="text-subtle text-sm mt-2">Contáctanos directamente para buscar un horario.</p>
-        </div>
-      ) : (
-        <div className="grid gap-5 @md:grid-cols-2 @3xl:grid-cols-[200px_minmax(0,1fr)_220px] @3xl:gap-6">
-          {/* Panel info */}
-          <aside className="@md:col-span-2 @3xl:col-span-1 flex flex-col @md:flex-row @md:items-center @3xl:items-start @3xl:flex-col gap-4 @3xl:gap-5 p-4 rounded-2xl bg-navy-mid border border-amber-dim">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-soft border border-amber/30 flex items-center justify-center flex-none">
-                <span className="text-amber font-semibold text-sm">
-                  {(data.team_name.trim()[0] ?? '·').toUpperCase()}
-                </span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-subtle text-[11px] uppercase tracking-wider">Tu consultor</p>
-                <p className="text-cream font-medium text-sm truncate">{data.team_name}</p>
-              </div>
-            </div>
-
-            <div className="flex @md:flex-col @3xl:flex-col gap-2">
-              <span className="inline-flex items-center gap-1.5 text-muted text-xs">
-                <svg className="w-3.5 h-3.5 text-amber flex-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-                </svg>
-                {data.duration_minutes} minutos
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-muted text-xs">
-                <svg className="w-3.5 h-3.5 text-amber flex-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20" />
-                </svg>
-                Europa/Madrid
-              </span>
-            </div>
-          </aside>
-
-          {/* Calendario mensual */}
-          <div className="@3xl:px-1">
-            {firstDate && (
-              <MonthCalendar
-                availableDates={availableDates}
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-                initialDate={firstDate}
-              />
-            )}
+      {hasAnySlot ? (
+        <div className="flex flex-col md:flex-row md:gap-0">
+          {/* Calendar */}
+          <div className="w-full md:max-w-[300px] lg:max-w-[320px] flex-none mb-8 md:mb-0 md:pr-8 lg:pr-10">
+            <CalendarGrid
+              availableDays={data.available_days}
+              selectedDate={activeDay?.date ?? null}
+              onSelectDate={setActiveDay}
+            />
           </div>
 
-          {/* Horarios del día elegido */}
-          <div className="min-w-0">
-            {selectedDay ? (
+          {/* Vertical divider — desktop only */}
+          <div className="hidden md:block w-px bg-cream/[0.06] flex-none self-stretch" />
+
+          {/* Time slots */}
+          <div
+            ref={slotsRef}
+            className="md:flex-1 md:pl-8 lg:pl-10 md:max-w-[220px]"
+          >
+            {activeDay ? (
               <>
-                <p className="text-cream text-sm font-medium mb-3 first-letter:uppercase">{selectedDay.label}</p>
-                <div className="grid grid-cols-3 @md:grid-cols-1 gap-2">
-                  {selectedDay.slots.map((slot) => (
-                    <div key={slot.start_utc} className="time-option">
-                      <TimeSlotButton
-                        slot={slot}
-                        selected={slot.start_utc === selectedSlotUtc}
-                        onSelect={(s) => onSelect(selectedDay, s)}
-                      />
-                    </div>
+                <p className="text-subtle text-[9px] uppercase tracking-widest mb-4 font-medium">
+                  {activeDay.label}
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-1.5 md:gap-1">
+                  {activeDay.slots.map(slot => (
+                    <TimeSlotButton
+                      key={slot.start_utc}
+                      slot={slot}
+                      selected={slot.start_utc === selectedSlotUtc}
+                      onSelect={s => onSelect(activeDay, s)}
+                    />
                   ))}
                 </div>
               </>
             ) : (
-              <p className="text-subtle text-sm pt-2">Elige un día en el calendario.</p>
+              <div className="hidden md:flex flex-col items-start justify-center h-full min-h-[200px]">
+                <p className="text-subtle text-xs leading-relaxed">
+                  Seleccioná un día<br />para ver los horarios
+                </p>
+              </div>
             )}
           </div>
+        </div>
+      ) : (
+        <div className="py-12">
+          <p className="text-muted text-base mb-2">No hay disponibilidad en los próximos días.</p>
+          <p className="text-subtle text-sm">Contactanos directamente para buscar un horario.</p>
         </div>
       )}
     </div>

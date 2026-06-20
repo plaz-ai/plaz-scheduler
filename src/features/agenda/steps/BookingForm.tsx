@@ -3,9 +3,50 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { CaretLeft, CircleNotch } from '@phosphor-icons/react';
 import type { SelectedSlot, BookingPayload } from '../types';
 
 gsap.registerPlugin(useGSAP);
+
+interface FloatingInputProps {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+  autoComplete?: string;
+}
+
+function FloatingInput({ label, type, value, onChange, hint, autoComplete }: FloatingInputProps) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || value.length > 0;
+
+  return (
+    <div className={[
+      'relative pt-5 pb-1.5 border-b transition-colors duration-200',
+      focused ? 'border-amber' : 'border-cream/15',
+    ].join(' ')}>
+      <label className={[
+        'absolute left-0 pointer-events-none transition-all duration-200',
+        floated
+          ? 'top-0 text-[10px] text-amber tracking-widest uppercase font-medium'
+          : 'top-5 text-sm text-cream/35',
+      ].join(' ')}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={focused ? (hint ?? '') : ''}
+        autoComplete={autoComplete}
+        className="w-full bg-transparent text-cream text-base py-1 focus:outline-none placeholder:text-cream/20"
+      />
+    </div>
+  );
+}
 
 interface Props {
   selected: SelectedSlot;
@@ -24,15 +65,11 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
 
   useGSAP(
     () => {
-      const reduce =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduce) return;
       gsap.from('.form-field', {
-        y: 16,
+        y: 14,
         opacity: 0,
-        duration: 0.4,
-        stagger: 0.08,
+        duration: 0.38,
+        stagger: 0.09,
         ease: 'power2.out',
       });
     },
@@ -41,12 +78,6 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const cleanName = name.trim();
-    const cleanEmail = email.trim();
-    if (!cleanName || !cleanEmail) {
-      setError('Escribe tu nombre y tu email para confirmar.');
-      return;
-    }
     setError(null);
     setIsSubmitting(true);
     try {
@@ -54,8 +85,8 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
         link_token: linkToken,
         slot_utc: selected.slot.start_utc,
         duration_minutes: durationMinutes,
-        booker_name: cleanName,
-        booker_email: cleanEmail,
+        booker_name: name.trim(),
+        booker_email: email.trim(),
       });
     } catch {
       setError('No pudimos confirmar la reserva. Intenta de nuevo.');
@@ -65,89 +96,79 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
   }
 
   return (
-    <div ref={ref} className="step-panel max-w-md mx-auto">
+    <div ref={ref} className="step-panel">
+      {/* Back button — full width, above the grid */}
       <button
-        type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer"
+        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98]"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
+        <CaretLeft className="w-4 h-4" weight="regular" />
         Cambiar horario
       </button>
 
-      {/* Selected slot summary */}
-      <div className="form-field p-4 rounded-2xl bg-amber-soft border border-amber/25 mb-8">
-        <p className="text-amber text-xs font-semibold uppercase tracking-wider mb-1">
-          Tu cita
-        </p>
-        <p className="text-cream font-semibold">{selected.day.label}</p>
-        <p className="text-cream/75 text-sm mt-0.5">
-          {selected.slot.start_madrid} · {durationMinutes} minutos
-        </p>
-      </div>
+      <div className="md:grid md:grid-cols-[2fr_3fr] md:gap-x-10 lg:gap-x-14 md:items-start">
 
-      <h1 className="form-field font-display text-3xl text-cream mb-1">Casi listo</h1>
-      <p className="form-field text-muted text-sm mb-8">
-        Solo necesitamos tus datos para confirmar la reserva
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="form-field">
-          <label htmlFor="booker-name" className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
-            Nombre completo
-          </label>
-          <input
-            id="booker-name"
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ej: María García"
-            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/10 transition-all"
-          />
-        </div>
-
-        <div className="form-field">
-          <label htmlFor="booker-email" className="block text-cream/70 text-xs font-medium mb-2 uppercase tracking-wider">
-            Email
-          </label>
-          <input
-            id="booker-email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="maria@ejemplo.com"
-            className="w-full bg-navy/60 border border-amber/20 text-cream rounded-xl px-4 py-3.5 text-sm placeholder:text-subtle focus:outline-none focus:border-amber/60 focus:ring-2 focus:ring-amber/10 transition-all"
-          />
-        </div>
-
-        {error && (
-          <p role="alert" className="form-field text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
-            {error}
+        {/* Left — heading + slot summary */}
+        <div className="form-field mb-8 md:mb-0 md:pt-1">
+          <h2 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-4">
+            Casi<br />listo.
+          </h2>
+          <p className="text-muted text-sm leading-relaxed mt-4">
+            <span className="text-cream font-medium">{selected.day.label}</span>
+            <br />
+            <span className="font-mono text-amber">{selected.slot.start_madrid}</span>
+            <span className="text-subtle mx-2">·</span>
+            {durationMinutes}&thinsp;min
           </p>
-        )}
+        </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-60 disabled:cursor-not-allowed text-navy font-semibold py-4 rounded-xl transition-colors duration-200 text-sm cursor-pointer mt-2"
-        >
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Confirmando...
-            </span>
-          ) : (
-            'Confirmar reserva'
+        {/* Right — form */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="form-field">
+            <FloatingInput
+              label="Nombre completo"
+              type="text"
+              value={name}
+              onChange={setName}
+              hint="María García"
+              autoComplete="name"
+            />
+          </div>
+
+          <div className="form-field">
+            <FloatingInput
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              hint="maria@ejemplo.com"
+              autoComplete="email"
+            />
+          </div>
+
+          {error && (
+            <p className="form-field text-red-400 text-sm border-l-2 border-red-400/40 pl-3 py-0.5">
+              {error}
+            </p>
           )}
-        </button>
-      </form>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-navy font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98]"
+          >
+            {isSubmitting ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <CircleNotch className="w-4 h-4 animate-spin" weight="bold" />
+                Confirmando...
+              </span>
+            ) : (
+              'Confirmar reserva'
+            )}
+          </button>
+        </form>
+
+      </div>
     </div>
   );
 }

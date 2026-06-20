@@ -11,14 +11,14 @@ interface Props {
 export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
   return (
     <button
-      type="button"
       onClick={() => onSelect(slot)}
       className={[
-        'w-full py-3 px-3 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',
-        'border focus:outline-none focus-visible:ring-2 focus-visible:ring-amber/60',
+        'slot-btn w-full py-2.5 px-3 text-sm font-mono text-center rounded-lg border',
+        'transition-all duration-100 cursor-pointer active:scale-95',
+        'focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50',
         selected
-          ? 'bg-amber border-amber text-navy font-semibold shadow-lg shadow-amber/20'
-          : 'bg-navy-light/50 border-amber-dim text-cream/75 hover:bg-navy-light hover:border-amber/35 hover:text-cream hover:scale-[1.02]',
+          ? 'bg-amber/15 border-amber text-amber font-semibold shadow-sm shadow-amber/10'
+          : 'bg-transparent border-cream/[0.08] text-cream/55 hover:text-cream hover:border-cream/20 hover:bg-cream/[0.04]',
       ].join(' ')}
     >
       {slot.start_madrid}
