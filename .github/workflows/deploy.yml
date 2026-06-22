@@ -31,8 +31,11 @@ jobs:
       - run: npm ci
 
       - name: Build
-        # Sin NEXT_PUBLIC_N8N_BASE_URL: la app usa la capa mock (demo sin backend).
+        # Inyecta el backend real (secret N8N_BASE_URL) como var pública de build.
+        # Sin este valor, la app cae a la capa mock (demo sin backend).
         run: npm run build
+        env:
+          NEXT_PUBLIC_N8N_BASE_URL: ${{ secrets.N8N_BASE_URL }}
 
       - uses: actions/configure-pages@v4
 

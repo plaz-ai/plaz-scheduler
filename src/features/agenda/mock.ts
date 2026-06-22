@@ -72,6 +72,6 @@ export function mockBooking(payload: BookingPayload): BookingResult {
     start_madrid: start.toLocaleString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
     }),
-    cancel_url: `/cancelar/?token=${cancelToken}`,
+    cancel_url: `#cancelacion-${cancelToken}`,
   };
 }

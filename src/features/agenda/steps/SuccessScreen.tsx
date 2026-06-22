@@ -54,7 +54,17 @@ export default function SuccessScreen({ booking }: Props) {
               <CalendarBlank className="w-3.5 h-3.5 text-amber flex-none" weight="regular" />
               <div>
                 <p className="text-subtle text-[9px] uppercase tracking-widest mb-0.5">Fecha y hora</p>
-                <p className="text-cream text-sm font-medium">{booking.start_madrid}</p>
+                <p className="text-cream text-sm font-medium">
+                  {booking.start_madrid || (booking.start_utc ? new Intl.DateTimeFormat('es-ES', {
+                    timeZone: 'Europe/Madrid',
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }).format(new Date(booking.start_utc)) : '')}
+                </p>
               </div>
             </div>
 
@@ -69,7 +79,7 @@ export default function SuccessScreen({ booking }: Props) {
 
           <a
             href={booking.cancel_url}
-            className="cancel-link text-subtle text-xs hover:text-muted transition-colors underline underline-offset-4"
+            className="cancel-link text-muted text-xs hover:text-cream transition-colors underline underline-offset-4"
           >
             Cancelar esta reserva
           </a>

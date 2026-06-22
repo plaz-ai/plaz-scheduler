@@ -11,6 +11,25 @@ function delay<T>(value: T, ms = 500): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));
 }
 
+function formatMadridDateTime(startUtc: string): string {
+  const date = new Date(startUtc);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const day = new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(date);
+  const time = new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+
+  return `${day} · ${time}`;
+}
+
 export async function fetchAvailability(linkToken: string): Promise<AvailabilityResponse> {
   if (USE_MOCK) {
     if (linkToken.includes('error')) { await delay(null, 400); throw new Error('mock: fallo de red'); }
@@ -43,5 +62,15 @@ export async function createBooking(payload: BookingPayload): Promise<BookingRes
     const text = await res.text().catch(() => '');
     throw new Error(`${res.status}: ${text}`);
   }
-  return res.json();
+
+  const booking = await res.json() as Partial<BookingResult> & { status?: string; message?: string };
+  if (booking.status !== 'confirmed' || !booking.start_utc) {
+    throw new Error(booking.message ?? 'La reserva no pudo confirmarse.');
+  }
+
+  return {
+    ...booking,
+    status: 'confirmed',
+    start_madrid: booking.start_madrid ?? formatMadridDateTime(booking.start_utc),
+  } as BookingResult;
 }
