@@ -189,10 +189,8 @@ Cada fase es desplegable y verificable de forma independiente. Las fases mapean 
 
 Gate resuelto (C / Path 2). Mientras seguimos **solo en local**, el trabajo se ordena en dos carriles paralelos:
 
-**Carril FRONT (local, lo que hago yo ahora):** construir la paridad del flujo de invitado (Fase 1) *contract-first* sobre el front actual + mock, gateado para no romper producción. Ya hechos en `feat/calcom-fase0`: tipos de evento, ubicaciones, preguntas custom, confirmación. Pendientes de front en Fase 1:
-- Zona horaria del invitado (agrupar slots en su tz, no solo formatear) + selector.
-- Reagendar (UI del flujo) y add-to-calendar (.ics/Google/Outlook).
-- Múltiples duraciones por tipo de evento.
+**Carril FRONT (local, lo que hago yo ahora):** construir la paridad del flujo de invitado (Fase 1) *contract-first* sobre el front actual + mock, gateado para no romper producción. Ya hechos en `feat/calcom-fase0`: tipos de evento, ubicaciones, preguntas custom, confirmación, **add-to-calendar (.ics/Google/Outlook)**, **múltiples duraciones por tipo**, **reagendar (UI + contratos `*-reschedule-info`/`*-reschedule`)**. Pendiente de front en Fase 1:
+- **Zona horaria del invitado** (agrupar/regrupar slots en su tz, no solo formatear) + selector. Es el más delicado (correctitud en bordes de día); se hace al final y bien.
 
 **Carril BACKEND (especificado para nico, NO aplicado sin pedido):** cada feature del carril front define su contrato de API (request/response) como ticket. Bloqueante real de SaaS multi-tenant: **Fase 0** (runtime full-stack + Supabase Auth + mover lógica transaccional de n8n a código testeable). Se arranca cuando se decida salir de "solo local".
 
