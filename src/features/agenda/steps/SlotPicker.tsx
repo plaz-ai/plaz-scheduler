@@ -13,10 +13,13 @@ gsap.registerPlugin(useGSAP);
 interface Props {
   data: AvailabilityResponse;
   selectedSlotUtc?: string;
+  durationMinutes: number;
+  durations?: number[];
+  onDurationChange?: (minutes: number) => void;
   onSelect: (day: AvailableDay, slot: TimeSlot) => void;
 }
 
-export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
+export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, durations, onDurationChange, onSelect }: Props) {
   const slotsRef = useRef<HTMLDivElement>(null);
   const [activeDay, setActiveDay] = useState<AvailableDay | null>(null);
 
@@ -51,8 +54,31 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
         </h1>
         <div className="flex items-center gap-2">
           <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
-          <span className="text-muted text-xs">{data.duration_minutes} min · Madrid</span>
+          <span className="text-muted text-xs">{durationMinutes} min · Madrid</span>
         </div>
+
+        {/* Selector de duración (cal.com) — solo si el tipo ofrece varias */}
+        {durations && durations.length > 1 && (
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {durations.map(min => {
+              const active = min === durationMinutes;
+              return (
+                <button
+                  key={min}
+                  onClick={() => onDurationChange?.(min)}
+                  className={[
+                    'rounded-lg border px-3 py-1.5 text-xs transition-colors cursor-pointer',
+                    active
+                      ? 'border-amber bg-amber text-navy font-semibold'
+                      : 'border-cream/[0.12] bg-cream/[0.02] text-cream/70 hover:border-amber/40 hover:text-cream',
+                  ].join(' ')}
+                >
+                  {min} min
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {hasAnySlot ? (

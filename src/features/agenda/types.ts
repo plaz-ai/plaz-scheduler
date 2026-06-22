@@ -28,7 +28,8 @@ export interface EventType {
   slug: string;
   title: string;
   description: string;
-  length_minutes: number;
+  length_minutes: number;              // duración por defecto
+  available_durations?: number[];      // si trae >1, el invitado elige (estilo cal.com)
   location_label: string; // "Google Meet", "Teléfono"...
   questions?: BookingQuestion[];
 }

@@ -50,12 +50,14 @@ export default function AgendaPage({ token }: Props) {
   const [selected, setSelected] = useState<SelectedSlot | null>(null);
   const [booking, setBooking] = useState<BookingResult | null>(null);
   const [eventType, setEventType] = useState<EventType | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
 
   // Tipos de evento (clon cal.com). Si el backend no los envía (producción),
   // la lista queda vacía y el selector se omite: el flujo es el de siempre.
   const eventTypes = data?.event_types ?? [];
   const needsEventTypeChoice = eventTypes.length > 1 && !eventType;
-  const effectiveDuration = eventType?.length_minutes ?? data?.duration_minutes ?? 0;
+  // Duración: la elegida por el invitado (si el tipo ofrece varias) o la por defecto.
+  const effectiveDuration = duration ?? eventType?.length_minutes ?? data?.duration_minutes ?? 0;
 
   // Clip-path wipe reveal on every step/state change
   useGSAP(
@@ -94,6 +96,7 @@ export default function AgendaPage({ token }: Props) {
   }
 
   function handleEventTypeSelect(et: EventType) {
+    setDuration(null); // usa la duración por defecto del nuevo tipo
     const panel = containerRef.current?.querySelector('.step-panel');
     if (!panel) { setEventType(et); return; }
     gsap.to(panel, {
@@ -158,7 +161,7 @@ export default function AgendaPage({ token }: Props) {
             {/* Cambiar tipo de reunión — solo antes de elegir horario */}
             {eventType && eventTypes.length > 1 && step === 1 && !booking && (
               <button
-                onClick={() => { setEventType(null); setSelected(null); }}
+                onClick={() => { setEventType(null); setSelected(null); setDuration(null); }}
                 className="text-subtle text-[11px] hover:text-cream transition-colors underline underline-offset-4"
               >
                 Cambiar tipo de reunión
@@ -259,6 +262,9 @@ export default function AgendaPage({ token }: Props) {
             <SlotPicker
               data={data}
               selectedSlotUtc={selected?.slot.start_utc}
+              durationMinutes={effectiveDuration}
+              durations={eventType?.available_durations}
+              onDurationChange={setDuration}
               onSelect={handleSlotSelect}
             />
           )}
