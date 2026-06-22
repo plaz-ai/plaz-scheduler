@@ -1,0 +1,10 @@
+# Archivos de configuración/datos que el AST descompone en una clave-por-nodo
+# (ruido de nodos huérfanos sin relaciones reales). Se excluyen del grafo.
+package.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+tsconfig.json
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+next-env.d.ts

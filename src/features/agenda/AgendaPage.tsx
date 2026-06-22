@@ -172,14 +172,14 @@ export default function AgendaPage({ token }: Props) {
         {/* Step counter */}
         <div className="flex md:flex-col items-baseline gap-2 md:gap-0">
           <span className="font-display font-black text-3xl md:text-5xl text-cream leading-none">
-            {String(step).padStart(2, '0')}
+            {needsEventTypeChoice ? '·' : String(step).padStart(2, '0')}
           </span>
-          <span className="text-subtle text-sm md:mt-1">/&thinsp;03</span>
+          {!needsEventTypeChoice && <span className="text-subtle text-sm md:mt-1">/&thinsp;03</span>}
         </div>
 
         {/* Step label — desktop only */}
         <p className="hidden md:block text-subtle text-[10px] mt-2 uppercase tracking-widest">
-          {STEP_LABELS[step]}
+          {needsEventTypeChoice ? 'Tipo de reunión' : STEP_LABELS[step]}
         </p>
       </aside>
 
