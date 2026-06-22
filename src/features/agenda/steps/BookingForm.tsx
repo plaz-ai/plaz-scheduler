@@ -15,11 +15,14 @@ interface FloatingInputProps {
   onChange: (v: string) => void;
   hint?: string;
   autoComplete?: string;
+  required?: boolean;
+  multiline?: boolean;
 }
 
-function FloatingInput({ label, type, value, onChange, hint, autoComplete }: FloatingInputProps) {
+function FloatingInput({ label, type, value, onChange, hint, autoComplete, required, multiline }: FloatingInputProps) {
   const [focused, setFocused] = useState(false);
   const floated = focused || value.length > 0;
+  const shared = 'w-full bg-transparent text-cream text-base py-1 focus:outline-none placeholder:text-cream/20';
 
   return (
     <div className={[
@@ -32,18 +35,32 @@ function FloatingInput({ label, type, value, onChange, hint, autoComplete }: Flo
           ? 'top-0 text-[10px] text-amber tracking-widest uppercase font-medium'
           : 'top-5 text-sm text-cream/35',
       ].join(' ')}>
-        {label}
+        {label}{required ? ' *' : ''}
       </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder={focused ? (hint ?? '') : ''}
-        autoComplete={autoComplete}
-        className="w-full bg-transparent text-cream text-base py-1 focus:outline-none placeholder:text-cream/20"
-      />
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={focused ? (hint ?? '') : ''}
+          required={required}
+          rows={2}
+          className={`${shared} resize-none`}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={focused ? (hint ?? '') : ''}
+          autoComplete={autoComplete}
+          required={required}
+          className={shared}
+        />
+      )}
     </div>
   );
 }
@@ -61,8 +78,11 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
   const ref = useRef<HTMLDivElement>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const questions = eventType?.questions ?? [];
 
   useGSAP(
     () => {
@@ -88,6 +108,7 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
         duration_minutes: durationMinutes,
         booker_name: name.trim(),
         booker_email: email.trim(),
+        ...(questions.length ? { answers } : {}),
       });
     } catch {
       setError('No pudimos confirmar la reserva. Intenta de nuevo.');
@@ -142,6 +163,7 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
               onChange={setName}
               hint="María García"
               autoComplete="name"
+              required
             />
           </div>
 
@@ -153,8 +175,24 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
               onChange={setEmail}
               hint="maria@ejemplo.com"
               autoComplete="email"
+              required
             />
           </div>
+
+          {/* Preguntas personalizadas del tipo de evento (clon cal.com) */}
+          {questions.map((q) => (
+            <div className="form-field" key={q.id}>
+              <FloatingInput
+                label={q.label}
+                type={q.type === 'tel' ? 'tel' : 'text'}
+                multiline={q.type === 'textarea'}
+                required={q.required}
+                value={answers[q.id] ?? ''}
+                onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))}
+                hint={q.placeholder}
+              />
+            </div>
+          ))}
 
           {error && (
             <p className="form-field text-red-400 text-sm border-l-2 border-red-400/40 pl-3 py-0.5">

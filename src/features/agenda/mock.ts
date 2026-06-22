@@ -20,6 +20,10 @@ const MOCK_EVENT_TYPES: EventType[] = [
     description: 'Sesión de 30 minutos para resolver dudas y plantear los próximos pasos.',
     length_minutes: 30,
     location_label: 'Google Meet',
+    questions: [
+      { id: 'empresa', label: 'Empresa', type: 'text', required: false, placeholder: 'Plaz S.L.' },
+      { id: 'tema', label: '¿Qué quieres tratar?', type: 'textarea', required: true, placeholder: 'Cuéntanos brevemente tu caso…' },
+    ],
   },
   {
     id: 'estrategia',
@@ -28,6 +32,11 @@ const MOCK_EVENT_TYPES: EventType[] = [
     description: 'Una hora en profundidad para diseñar un plan a medida contigo.',
     length_minutes: 60,
     location_label: 'Google Meet',
+    questions: [
+      { id: 'empresa', label: 'Empresa', type: 'text', required: true, placeholder: 'Plaz S.L.' },
+      { id: 'telefono', label: 'Teléfono de contacto', type: 'tel', required: false, placeholder: '+34 600 000 000' },
+      { id: 'objetivos', label: 'Objetivos de la sesión', type: 'textarea', required: true, placeholder: '¿Qué te gustaría conseguir?' },
+    ],
   },
 ];
 
