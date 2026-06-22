@@ -1,7 +1,11 @@
 # Plan de migración 1:1 a cal.com — Plaz Scheduler
 
-> Objetivo del usuario: alcanzar **paridad casi total con cal.com (Nivel 4, SaaS completo)**.
+> Objetivo del usuario: que **nuestro propio scheduler sea funcionalmente idéntico a cal.com**, con la cara/identidad Plaz y propiedad total del stack y el dato.
 > Fecha: 2026-06-22 · Estado actual: booking público funcional (3 pasos) sobre n8n + Supabase + Google Calendar.
+>
+> **GATE RESUELTO (2026-06-22): Path 2 = camino C — Motor propio.** Se construye el motor sobre el stack de nico (Supabase + n8n + Google Calendar) extendiéndolo feature a feature hasta la paridad, con el front Plaz por encima. Se descartan A (adoptar cal.com OSS) y B (híbrido): la intención es un producto propio funcionalmente equivalente, no usar cal.com por debajo.
+>
+> **Método de trabajo (mientras "solo local"):** *contract-first, local-first*. El front y los contratos (tipos/mock) se construyen y validan en local; cada pieza de backend se **especifica** como ticket para nico pero **no se aplica** a Supabase/n8n de producción sin pedido explícito. Las features de front se gatean sobre datos que hoy solo provee el mock, para que producción siga intacta.
 
 ---
 
@@ -28,7 +32,7 @@ cal.com es **open-source (AGPLv3)** y self-hosteable. Hay tres caminos; el plan 
 
 **Recomendación:** si el objetivo de negocio es "tener un cal propio ya", evaluar **A** seriamente (días vs meses). Si el objetivo es un producto diferenciado y propiedad total del stack/dato, **C**. Este documento detalla **C** (el camino más largo), porque es el que requiere plan; si eliges A/B, el plan se reduce a una fracción.
 
-> **Acción requerida:** decidir A / B / C antes de invertir en fases. El resto asume **C**.
+> **✅ DECIDIDO: C (Path 2 — motor propio).** El producto debe ser nuestro y funcionalmente idéntico, no cal.com por debajo. El resto del documento (§3–§8) es el camino activo.
 
 ---
 
@@ -182,6 +186,14 @@ Cada fase es desplegable y verificable de forma independiente. Las fases mapean 
 ---
 
 ## 8. Siguiente paso inmediato
-1. **Resolver el gate §1 (A/B/C).**
-2. Si **C**: arrancar **Fase 0** (migración de stack) — es bloqueante de todo lo demás.
-3. Convertir cada fase en su propio spec + plan de implementación antes de codear.
+
+Gate resuelto (C / Path 2). Mientras seguimos **solo en local**, el trabajo se ordena en dos carriles paralelos:
+
+**Carril FRONT (local, lo que hago yo ahora):** construir la paridad del flujo de invitado (Fase 1) *contract-first* sobre el front actual + mock, gateado para no romper producción. Ya hechos en `feat/calcom-fase0`: tipos de evento, ubicaciones, preguntas custom, confirmación. Pendientes de front en Fase 1:
+- Zona horaria del invitado (agrupar slots en su tz, no solo formatear) + selector.
+- Reagendar (UI del flujo) y add-to-calendar (.ics/Google/Outlook).
+- Múltiples duraciones por tipo de evento.
+
+**Carril BACKEND (especificado para nico, NO aplicado sin pedido):** cada feature del carril front define su contrato de API (request/response) como ticket. Bloqueante real de SaaS multi-tenant: **Fase 0** (runtime full-stack + Supabase Auth + mover lógica transaccional de n8n a código testeable). Se arranca cuando se decida salir de "solo local".
+
+**Disciplina:** cada fase = su propio spec + plan antes de codear backend. El front va por delante validando UX y fijando los contratos que el backend deberá cumplir.
