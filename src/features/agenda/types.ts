@@ -11,10 +11,23 @@ export interface AvailableDay {
   slots: TimeSlot[];
 }
 
+// Tipo de evento estilo cal.com (p. ej. "Llamada de descubrimiento · 30 min").
+// Opcional en la respuesta: hoy solo lo provee la capa mock; el backend de nico
+// expone un único flujo, así que en producción el selector no se muestra.
+export interface EventType {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  length_minutes: number;
+  location_label: string; // "Google Meet", "Teléfono"...
+}
+
 export interface AvailabilityResponse {
   team_name: string;
   duration_minutes: number;
   available_days: AvailableDay[];
+  event_types?: EventType[];
   link_expired?: boolean;
   link_exhausted?: boolean;
 }

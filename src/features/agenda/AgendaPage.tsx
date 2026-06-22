@@ -11,10 +11,12 @@ import type {
   SelectedSlot,
   BookingPayload,
   BookingResult,
+  EventType,
 } from './types';
 import SlotPicker from './steps/SlotPicker';
 import BookingForm from './steps/BookingForm';
 import SuccessScreen from './steps/SuccessScreen';
+import EventTypePicker from './steps/EventTypePicker';
 import { Clock, Globe, CalendarBlank } from '@phosphor-icons/react';
 
 gsap.registerPlugin(useGSAP);
@@ -47,6 +49,13 @@ export default function AgendaPage({ token }: Props) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<SelectedSlot | null>(null);
   const [booking, setBooking] = useState<BookingResult | null>(null);
+  const [eventType, setEventType] = useState<EventType | null>(null);
+
+  // Tipos de evento (clon cal.com). Si el backend no los envía (producción),
+  // la lista queda vacía y el selector se omite: el flujo es el de siempre.
+  const eventTypes = data?.event_types ?? [];
+  const needsEventTypeChoice = eventTypes.length > 1 && !eventType;
+  const effectiveDuration = eventType?.length_minutes ?? data?.duration_minutes ?? 0;
 
   // Clip-path wipe reveal on every step/state change
   useGSAP(
@@ -59,7 +68,7 @@ export default function AgendaPage({ token }: Props) {
         { clipPath: 'inset(0 0% 0 0)', duration: 0.45, ease: 'power2.out' }
       );
     },
-    { scope: containerRef, dependencies: [step, loadError, data] }
+    { scope: containerRef, dependencies: [step, loadError, data, eventType] }
   );
 
   useEffect(() => {
@@ -82,6 +91,17 @@ export default function AgendaPage({ token }: Props) {
   function handleSlotSelect(day: AvailableDay, slot: TimeSlot) {
     setSelected({ day, slot });
     animateOut(2);
+  }
+
+  function handleEventTypeSelect(et: EventType) {
+    const panel = containerRef.current?.querySelector('.step-panel');
+    if (!panel) { setEventType(et); return; }
+    gsap.to(panel, {
+      clipPath: 'inset(0 0 0 100%)',
+      duration: 0.25,
+      ease: 'power2.in',
+      onComplete: () => setEventType(et),
+    });
   }
 
   async function handleConfirm(payload: BookingPayload) {
@@ -121,17 +141,29 @@ export default function AgendaPage({ token }: Props) {
             <div className="space-y-2.5 pt-1">
               <p className="flex items-center gap-2.5 text-muted text-xs">
                 <CalendarBlank className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
-                {booking ? 'Cita confirmada' : 'Selecciona un horario'}
+                <span className="truncate">
+                  {booking ? 'Cita confirmada' : eventType ? eventType.title : 'Elige tu reunión'}
+                </span>
               </p>
               <p className="flex items-center gap-2.5 text-muted text-xs">
                 <Clock className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
-                {data.duration_minutes} min
+                {effectiveDuration} min
               </p>
               <p className="flex items-center gap-2.5 text-muted text-xs">
                 <Globe className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
                 <span className="truncate">Horario de Madrid</span>
               </p>
             </div>
+
+            {/* Cambiar tipo de reunión — solo antes de elegir horario */}
+            {eventType && eventTypes.length > 1 && step === 1 && !booking && (
+              <button
+                onClick={() => { setEventType(null); setSelected(null); }}
+                className="text-subtle text-[11px] hover:text-cream transition-colors underline underline-offset-4"
+              >
+                Cambiar tipo de reunión
+              </button>
+            )}
           </div>
         )}
 
@@ -217,8 +249,13 @@ export default function AgendaPage({ token }: Props) {
             </div>
           )}
 
+          {/* Step 0 — event type picker (clon cal.com) */}
+          {data && !data.link_expired && !data.link_exhausted && needsEventTypeChoice && (
+            <EventTypePicker eventTypes={eventTypes} onSelect={handleEventTypeSelect} />
+          )}
+
           {/* Step 1 — slot picker */}
-          {data && !data.link_expired && !data.link_exhausted && step === 1 && (
+          {data && !data.link_expired && !data.link_exhausted && !needsEventTypeChoice && step === 1 && (
             <SlotPicker
               data={data}
               selectedSlotUtc={selected?.slot.start_utc}
@@ -227,18 +264,19 @@ export default function AgendaPage({ token }: Props) {
           )}
 
           {/* Step 2 — booking form */}
-          {data && !data.link_expired && !data.link_exhausted && step === 2 && selected && (
+          {data && !data.link_expired && !data.link_exhausted && !needsEventTypeChoice && step === 2 && selected && (
             <BookingForm
               selected={selected}
               linkToken={token}
-              durationMinutes={data.duration_minutes}
+              durationMinutes={effectiveDuration}
+              eventType={eventType}
               onBack={() => animateOut(1)}
               onConfirm={handleConfirm}
             />
           )}
 
           {/* Step 3 — success */}
-          {step === 3 && booking && <SuccessScreen booking={booking} />}
+          {step === 3 && booking && <SuccessScreen booking={booking} eventType={eventType} />}
         </main>
 
         {/* Footer */}

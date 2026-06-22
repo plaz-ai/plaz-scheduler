@@ -1,6 +1,35 @@
 // Datos simulados para desarrollar el front sin backend.
 // Se usan cuando NEXT_PUBLIC_N8N_BASE_URL no está definido.
-import type { AvailabilityResponse, AvailableDay, BookingPayload, BookingResult, TimeSlot } from './types';
+import type { AvailabilityResponse, AvailableDay, BookingPayload, BookingResult, EventType, TimeSlot } from './types';
+
+// Tipos de evento simulados (clon cal.com). En producción los slots reales vienen
+// del backend; aquí solo demostramos la pantalla de selección estilo cal.com.
+const MOCK_EVENT_TYPES: EventType[] = [
+  {
+    id: 'descubrimiento',
+    slug: 'descubrimiento',
+    title: 'Llamada de descubrimiento',
+    description: 'Una primera conversación para entender tu caso y ver si encajamos.',
+    length_minutes: 15,
+    location_label: 'Google Meet',
+  },
+  {
+    id: 'consulta',
+    slug: 'consulta',
+    title: 'Consulta con un comercial',
+    description: 'Sesión de 30 minutos para resolver dudas y plantear los próximos pasos.',
+    length_minutes: 30,
+    location_label: 'Google Meet',
+  },
+  {
+    id: 'estrategia',
+    slug: 'estrategia',
+    title: 'Sesión de estrategia',
+    description: 'Una hora en profundidad para diseñar un plan a medida contigo.',
+    length_minutes: 60,
+    location_label: 'Google Meet',
+  },
+];
 
 const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const WEEKDAYS_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -39,7 +68,7 @@ function buildDay(date: Date): AvailableDay {
 }
 
 export function mockAvailability(linkToken = ''): AvailabilityResponse {
-  const base = { team_name: 'Juana Gil', duration_minutes: DURATION_MINUTES };
+  const base = { team_name: 'Juana Gil', duration_minutes: DURATION_MINUTES, event_types: MOCK_EVENT_TYPES };
 
   // Estados de prueba según el token (solo en modo mock).
   if (linkToken.includes('expired')) return { ...base, available_days: [], link_expired: true };

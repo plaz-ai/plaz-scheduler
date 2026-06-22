@@ -3,16 +3,17 @@
 import { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Check, CalendarBlank, User } from '@phosphor-icons/react';
-import type { BookingResult } from '../types';
+import { Check, CalendarBlank, User, VideoCamera } from '@phosphor-icons/react';
+import type { BookingResult, EventType } from '../types';
 
 gsap.registerPlugin(useGSAP);
 
 interface Props {
   booking: BookingResult;
+  eventType?: EventType | null;
 }
 
-export default function SuccessScreen({ booking }: Props) {
+export default function SuccessScreen({ booking, eventType }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
 
@@ -69,13 +70,23 @@ export default function SuccessScreen({ booking }: Props) {
               </div>
             </div>
 
-            <div className="success-detail flex items-center gap-4 px-5 py-4">
+            <div className="success-detail flex items-center gap-4 px-5 py-4 border-b border-cream/[0.07]">
               <User className="w-4 h-4 text-amber flex-none" weight="regular" />
               <div>
                 <p className="text-subtle text-[9px] uppercase tracking-widest mb-0.5">Tu consultor</p>
                 <p className="text-cream text-sm font-medium">{booking.host_name}</p>
               </div>
             </div>
+
+            {eventType && (
+              <div className="success-detail flex items-center gap-4 px-5 py-4">
+                <VideoCamera className="w-4 h-4 text-amber flex-none" weight="regular" />
+                <div>
+                  <p className="text-subtle text-[9px] uppercase tracking-widest mb-0.5">Ubicación</p>
+                  <p className="text-cream text-sm font-medium">{eventType.location_label}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <a

@@ -3,8 +3,8 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { CaretLeft, CircleNotch } from '@phosphor-icons/react';
-import type { SelectedSlot, BookingPayload } from '../types';
+import { CaretLeft, CircleNotch, VideoCamera } from '@phosphor-icons/react';
+import type { SelectedSlot, BookingPayload, EventType } from '../types';
 
 gsap.registerPlugin(useGSAP);
 
@@ -52,11 +52,12 @@ interface Props {
   selected: SelectedSlot;
   linkToken: string;
   durationMinutes: number;
+  eventType?: EventType | null;
   onBack: () => void;
   onConfirm: (payload: BookingPayload) => Promise<void>;
 }
 
-export default function BookingForm({ selected, linkToken, durationMinutes, onBack, onConfirm }: Props) {
+export default function BookingForm({ selected, linkToken, durationMinutes, eventType, onBack, onConfirm }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -113,13 +114,22 @@ export default function BookingForm({ selected, linkToken, durationMinutes, onBa
           <h2 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-4">
             Casi<br />listo.
           </h2>
-          <p className="text-muted text-sm leading-relaxed mt-4">
+          {eventType && (
+            <p className="text-cream text-sm font-semibold mt-4">{eventType.title}</p>
+          )}
+          <p className="text-muted text-sm leading-relaxed mt-1">
             <span className="text-cream font-medium">{selected.day.label}</span>
             <br />
             <span className="font-mono text-amber">{selected.slot.start_madrid}</span>
             <span className="text-subtle mx-2">·</span>
             {durationMinutes}&thinsp;min
           </p>
+          {eventType && (
+            <p className="flex items-center gap-2 text-muted text-xs mt-3">
+              <VideoCamera className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
+              {eventType.location_label}
+            </p>
+          )}
         </div>
 
         {/* Right — form */}
