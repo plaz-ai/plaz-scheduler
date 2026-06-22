@@ -276,7 +276,7 @@ export default function AgendaPage({ token }: Props) {
           )}
 
           {/* Step 3 — success */}
-          {step === 3 && booking && <SuccessScreen booking={booking} eventType={eventType} />}
+          {step === 3 && booking && <SuccessScreen booking={booking} eventType={eventType} durationMinutes={effectiveDuration} />}
         </main>
 
         {/* Footer */}

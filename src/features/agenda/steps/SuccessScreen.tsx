@@ -3,19 +3,44 @@
 import { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Check, CalendarBlank, User, VideoCamera } from '@phosphor-icons/react';
+import { Check, CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple } from '@phosphor-icons/react';
 import type { BookingResult, EventType } from '../types';
+import { googleCalendarUrl, outlookCalendarUrl, icsObjectUrl, type CalEvent } from '../lib/calendar-export';
 
 gsap.registerPlugin(useGSAP);
 
 interface Props {
   booking: BookingResult;
   eventType?: EventType | null;
+  durationMinutes?: number;
 }
 
-export default function SuccessScreen({ booking, eventType }: Props) {
+export default function SuccessScreen({ booking, eventType, durationMinutes }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
+
+  // Evento de calendario derivado de la reserva (cliente, sin backend).
+  const start = new Date(booking.start_utc);
+  const dur = durationMinutes && durationMinutes > 0 ? durationMinutes : 30;
+  const calEvent: CalEvent = {
+    title: eventType?.title ?? `Reunión con ${booking.host_name}`,
+    start,
+    end: new Date(start.getTime() + dur * 60000),
+    location: eventType?.location_label,
+    description: `Tu reunión con ${booking.host_name}.`,
+    uid: booking.booking_id,
+  };
+
+  function downloadIcs() {
+    const url = icsObjectUrl(calEvent);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cita-plaz.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
 
   useGSAP(
     () => {
@@ -87,6 +112,38 @@ export default function SuccessScreen({ booking, eventType }: Props) {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Añadir al calendario (cal.com) — generado en cliente */}
+          <div className="success-detail mb-6">
+            <p className="text-subtle text-[9px] uppercase tracking-widest mb-2.5">Añadir al calendario</p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={googleCalendarUrl(calEvent)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-cream/[0.02] px-3.5 py-2 text-cream/80 text-xs hover:border-amber/40 hover:text-cream transition-colors"
+              >
+                <GoogleLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
+                Google
+              </a>
+              <a
+                href={outlookCalendarUrl(calEvent)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-cream/[0.02] px-3.5 py-2 text-cream/80 text-xs hover:border-amber/40 hover:text-cream transition-colors"
+              >
+                <MicrosoftOutlookLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
+                Outlook
+              </a>
+              <button
+                onClick={downloadIcs}
+                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-cream/[0.02] px-3.5 py-2 text-cream/80 text-xs hover:border-amber/40 hover:text-cream transition-colors cursor-pointer"
+              >
+                <DownloadSimple className="w-3.5 h-3.5 text-amber/80" weight="bold" />
+                .ics
+              </button>
+            </div>
           </div>
 
           <a
