@@ -55,7 +55,7 @@ export default function EventTypePicker({ eventTypes, onSelect }: Props) {
           >
             <div className="flex-1 min-w-0">
               <p className="text-cream text-sm font-semibold mb-1">{et.title}</p>
-              <p className="text-muted text-xs leading-relaxed mb-2.5 line-clamp-2">{et.description}</p>
+              <p className="text-muted text-xs leading-relaxed mb-2.5 line-clamp-2 min-h-[3.25em]">{et.description}</p>
               <div className="flex items-center gap-4">
                 <span className="inline-flex items-center gap-1.5 text-subtle text-[11px]">
                   <Clock className="w-3 h-3 text-amber/70" weight="regular" />
