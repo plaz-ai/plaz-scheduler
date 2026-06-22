@@ -72,14 +72,14 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
           {/* Time slots */}
           <div
             ref={slotsRef}
-            className="md:flex-1 md:pl-8 lg:pl-10 md:max-w-[220px]"
+            className="md:flex-1 md:pl-8 lg:pl-10 md:max-w-[240px]"
           >
             {activeDay ? (
               <>
-                <p className="text-subtle text-[9px] uppercase tracking-widest mb-4 font-medium">
+                <p className="text-subtle text-[9px] uppercase tracking-widest mb-3 font-medium">
                   {activeDay.label}
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-1 gap-1.5 md:gap-1">
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-1.5 md:gap-1.5 md:max-h-[55vh] md:overflow-y-auto md:pr-1 slot-scroll">
                   {activeDay.slots.map(slot => (
                     <TimeSlotButton
                       key={slot.start_utc}
@@ -91,7 +91,7 @@ export default function SlotPicker({ data, selectedSlotUtc, onSelect }: Props) {
                 </div>
               </>
             ) : (
-              <div className="hidden md:flex flex-col items-start justify-center h-full min-h-[200px]">
+              <div className="hidden md:flex flex-col items-start justify-center min-h-[200px]">
                 <p className="text-subtle text-xs leading-relaxed">
                   Seleccioná un día<br />para ver los horarios
                 </p>

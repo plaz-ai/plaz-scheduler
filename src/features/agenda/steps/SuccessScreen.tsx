@@ -33,6 +33,17 @@ export default function SuccessScreen({ booking }: Props) {
     { scope: ref }
   );
 
+  const when = booking.start_madrid || (booking.start_utc
+    ? new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'Europe/Madrid',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(booking.start_utc))
+    : '');
+
   return (
     <div ref={ref} className="step-panel">
       <div className="md:grid md:grid-cols-[2fr_3fr] md:gap-x-10 lg:gap-x-14 md:items-start">
@@ -47,29 +58,19 @@ export default function SuccessScreen({ booking }: Props) {
           </h2>
         </div>
 
-        {/* Right — details + cancel */}
+        {/* Right — summary card + cancel */}
         <div className="md:pt-1">
-          <div className="mb-8">
-            <div className="success-detail flex items-center gap-4 py-4 border-b border-cream/[0.07]">
-              <CalendarBlank className="w-3.5 h-3.5 text-amber flex-none" weight="regular" />
+          <div className="rounded-xl border border-cream/[0.08] bg-cream/[0.02] overflow-hidden mb-6">
+            <div className="success-detail flex items-center gap-4 px-5 py-4 border-b border-cream/[0.07]">
+              <CalendarBlank className="w-4 h-4 text-amber flex-none" weight="regular" />
               <div>
                 <p className="text-subtle text-[9px] uppercase tracking-widest mb-0.5">Fecha y hora</p>
-                <p className="text-cream text-sm font-medium">
-                  {booking.start_madrid || (booking.start_utc ? new Intl.DateTimeFormat('es-ES', {
-                    timeZone: 'Europe/Madrid',
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }).format(new Date(booking.start_utc)) : '')}
-                </p>
+                <p className="text-cream text-sm font-medium capitalize">{when}</p>
               </div>
             </div>
 
-            <div className="success-detail flex items-center gap-4 py-4 border-b border-cream/[0.07]">
-              <User className="w-3.5 h-3.5 text-amber flex-none" weight="regular" />
+            <div className="success-detail flex items-center gap-4 px-5 py-4">
+              <User className="w-4 h-4 text-amber flex-none" weight="regular" />
               <div>
                 <p className="text-subtle text-[9px] uppercase tracking-widest mb-0.5">Tu consultor</p>
                 <p className="text-cream text-sm font-medium">{booking.host_name}</p>

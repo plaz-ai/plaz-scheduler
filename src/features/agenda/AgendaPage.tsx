@@ -15,8 +15,17 @@ import type {
 import SlotPicker from './steps/SlotPicker';
 import BookingForm from './steps/BookingForm';
 import SuccessScreen from './steps/SuccessScreen';
+import { Clock, Globe, CalendarBlank } from '@phosphor-icons/react';
 
 gsap.registerPlugin(useGSAP);
+
+// Iniciales para el avatar del organizador ("Equipo Comercial" → "EC").
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '·';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 type Step = 1 | 2 | 3;
 
@@ -99,11 +108,31 @@ export default function AgendaPage({ token }: Props) {
           Plaz<span className="text-amber">.</span>
         </span>
 
-        {/* Team name — desktop only */}
+        {/* Organizer context — desktop only (estilo cal.com) */}
         {data && (
-          <p className="hidden md:block text-muted text-[10px] mt-5 uppercase tracking-widest font-medium">
-            {data.team_name}
-          </p>
+          <div className="hidden md:block mt-8 space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="flex-none w-9 h-9 rounded-full border border-amber/35 flex items-center justify-center text-amber text-xs font-bold">
+                {initials(data.team_name)}
+              </span>
+              <span className="text-cream text-sm font-medium leading-tight">{data.team_name}</span>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              <p className="flex items-center gap-2.5 text-muted text-xs">
+                <CalendarBlank className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
+                {booking ? 'Cita confirmada' : 'Selecciona un horario'}
+              </p>
+              <p className="flex items-center gap-2.5 text-muted text-xs">
+                <Clock className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
+                {data.duration_minutes} min
+              </p>
+              <p className="flex items-center gap-2.5 text-muted text-xs">
+                <Globe className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
+                <span className="truncate">Horario de Madrid</span>
+              </p>
+            </div>
+          </div>
         )}
 
         <div className="hidden md:flex flex-1" />
