@@ -1,6 +1,6 @@
 // Datos simulados para desarrollar el front sin backend.
 // Se usan cuando NEXT_PUBLIC_N8N_BASE_URL no está definido.
-import type { AvailabilityResponse, AvailableDay, BookingPayload, BookingResult, EventType, TimeSlot } from './types';
+import type { AvailabilityResponse, AvailableDay, BookingPayload, BookingResult, EventType, ReschedulePayload, RescheduleInfo, TimeSlot } from './types';
 
 // Tipos de evento simulados (clon cal.com). En producción los slots reales vienen
 // del backend; aquí solo demostramos la pantalla de selección estilo cal.com.
@@ -99,6 +99,43 @@ export function mockAvailability(linkToken = ''): AvailabilityResponse {
   }
 
   return { ...base, available_days: days };
+}
+
+// Reagendar: disponibilidad + datos de la reserva original (mock).
+export function mockRescheduleInfo(uid = ''): RescheduleInfo {
+  const avail = mockAvailability(uid);
+  const firstSlot = avail.available_days[0]?.slots[0];
+  const startUtc = firstSlot?.start_utc ?? new Date().toISOString();
+  const fullLabel = new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
+    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
+  }).format(new Date(startUtc));
+
+  return {
+    ...avail,
+    original: {
+      start_utc: startUtc,
+      start_madrid: fullLabel,
+      host_name: avail.team_name,
+      title: 'Consulta con un comercial',
+      duration_minutes: 30,
+      location_label: 'Google Meet',
+    },
+  };
+}
+
+export function mockReschedule(payload: ReschedulePayload): BookingResult {
+  const start = new Date(payload.slot_utc);
+  return {
+    status: 'confirmed',
+    booking_id: payload.booking_uid,
+    host_name: 'Juana Gil',
+    start_utc: payload.slot_utc,
+    start_madrid: start.toLocaleString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
+    }),
+    cancel_url: `#cancelacion-${payload.booking_uid}`,
+  };
 }
 
 export function mockBooking(payload: BookingPayload): BookingResult {

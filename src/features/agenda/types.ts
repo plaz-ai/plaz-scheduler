@@ -61,6 +61,28 @@ export interface BookingResult {
   cancel_url: string;
 }
 
+// Reagendar (estilo cal.com): el invitado abre un link con el uid de su reserva,
+// ve su cita actual y elige un nuevo horario. Contrato pendiente en backend (ticket nico).
+export interface RescheduleOriginal {
+  start_utc: string;
+  start_madrid: string;       // etiqueta completa: "lunes, 23 de junio · 10:00"
+  host_name: string;
+  title?: string;
+  duration_minutes: number;
+  location_label?: string;
+}
+
+export interface RescheduleInfo extends AvailabilityResponse {
+  original: RescheduleOriginal;
+}
+
+export interface ReschedulePayload {
+  booking_uid: string;
+  slot_utc: string;
+  duration_minutes: number;
+  reason?: string;
+}
+
 export interface SelectedSlot {
   day: AvailableDay;
   slot: TimeSlot;

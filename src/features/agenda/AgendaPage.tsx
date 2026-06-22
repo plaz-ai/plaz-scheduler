@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { fetchAvailability, createBooking } from './api';
+import { fetchAvailability, createBooking, fetchRescheduleInfo, rescheduleBooking } from './api';
 import type {
   AvailabilityResponse,
   AvailableDay,
@@ -12,11 +12,13 @@ import type {
   BookingPayload,
   BookingResult,
   EventType,
+  RescheduleOriginal,
 } from './types';
 import SlotPicker from './steps/SlotPicker';
 import BookingForm from './steps/BookingForm';
 import SuccessScreen from './steps/SuccessScreen';
 import EventTypePicker from './steps/EventTypePicker';
+import RescheduleConfirm from './steps/RescheduleConfirm';
 import { Clock, Globe, CalendarBlank } from '@phosphor-icons/react';
 
 gsap.registerPlugin(useGSAP);
@@ -39,13 +41,16 @@ const STEP_LABELS: Record<Step, string> = {
 
 interface Props {
   token: string;
+  rescheduleUid?: string;
 }
 
-export default function AgendaPage({ token }: Props) {
+export default function AgendaPage({ token, rescheduleUid }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const isReschedule = !!rescheduleUid;
 
   const [step, setStep] = useState<Step>(1);
   const [data, setData] = useState<AvailabilityResponse | null>(null);
+  const [original, setOriginal] = useState<RescheduleOriginal | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<SelectedSlot | null>(null);
   const [booking, setBooking] = useState<BookingResult | null>(null);
@@ -54,10 +59,13 @@ export default function AgendaPage({ token }: Props) {
 
   // Tipos de evento (clon cal.com). Si el backend no los envía (producción),
   // la lista queda vacía y el selector se omite: el flujo es el de siempre.
+  // En reagendado, el tipo/evento ya está fijado: no se muestra el selector.
   const eventTypes = data?.event_types ?? [];
-  const needsEventTypeChoice = eventTypes.length > 1 && !eventType;
-  // Duración: la elegida por el invitado (si el tipo ofrece varias) o la por defecto.
-  const effectiveDuration = duration ?? eventType?.length_minutes ?? data?.duration_minutes ?? 0;
+  const needsEventTypeChoice = !isReschedule && eventTypes.length > 1 && !eventType;
+  // Duración: en reagendado, la de la reserva original; si no, la elegida o la por defecto.
+  const effectiveDuration = isReschedule
+    ? (original?.duration_minutes ?? data?.duration_minutes ?? 0)
+    : (duration ?? eventType?.length_minutes ?? data?.duration_minutes ?? 0);
 
   // Clip-path wipe reveal on every step/state change
   useGSAP(
@@ -74,10 +82,16 @@ export default function AgendaPage({ token }: Props) {
   );
 
   useEffect(() => {
+    if (isReschedule) {
+      fetchRescheduleInfo(rescheduleUid!)
+        .then((info) => { setData(info); setOriginal(info.original); })
+        .catch(() => setLoadError('No pudimos cargar tu reserva. Verifica el link.'));
+      return;
+    }
     fetchAvailability(token)
       .then(setData)
       .catch(() => setLoadError('No pudimos cargar la disponibilidad. Verifica el link.'));
-  }, [token]);
+  }, [token, rescheduleUid, isReschedule]);
 
   function animateOut(next: Step) {
     const panel = containerRef.current?.querySelector('.step-panel');
@@ -109,6 +123,18 @@ export default function AgendaPage({ token }: Props) {
 
   async function handleConfirm(payload: BookingPayload) {
     const result = await createBooking(payload);
+    setBooking(result);
+    animateOut(3);
+  }
+
+  async function handleReschedule(reason: string) {
+    if (!selected) return;
+    const result = await rescheduleBooking({
+      booking_uid: rescheduleUid!,
+      slot_utc: selected.slot.start_utc,
+      duration_minutes: effectiveDuration,
+      ...(reason ? { reason } : {}),
+    });
     setBooking(result);
     animateOut(3);
   }
@@ -145,7 +171,11 @@ export default function AgendaPage({ token }: Props) {
               <p className="flex items-center gap-2.5 text-muted text-xs">
                 <CalendarBlank className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
                 <span className="truncate">
-                  {booking ? 'Cita confirmada' : eventType ? eventType.title : 'Elige tu reunión'}
+                  {booking
+                    ? (isReschedule ? 'Cita reagendada' : 'Cita confirmada')
+                    : isReschedule
+                      ? (original?.title ?? 'Reagendar cita')
+                      : eventType ? eventType.title : 'Elige tu reunión'}
                 </span>
               </p>
               <p className="flex items-center gap-2.5 text-muted text-xs">
@@ -182,7 +212,7 @@ export default function AgendaPage({ token }: Props) {
 
         {/* Step label — desktop only */}
         <p className="hidden md:block text-subtle text-[10px] mt-2 uppercase tracking-widest">
-          {needsEventTypeChoice ? 'Tipo de reunión' : STEP_LABELS[step]}
+          {needsEventTypeChoice ? 'Tipo de reunión' : isReschedule && step === 2 ? 'Confirmar cambio' : STEP_LABELS[step]}
         </p>
       </aside>
 
@@ -269,20 +299,38 @@ export default function AgendaPage({ token }: Props) {
             />
           )}
 
-          {/* Step 2 — booking form */}
+          {/* Step 2 — confirmación: reagendar o formulario de reserva */}
           {data && !data.link_expired && !data.link_exhausted && !needsEventTypeChoice && step === 2 && selected && (
-            <BookingForm
-              selected={selected}
-              linkToken={token}
-              durationMinutes={effectiveDuration}
-              eventType={eventType}
-              onBack={() => animateOut(1)}
-              onConfirm={handleConfirm}
-            />
+            isReschedule && original ? (
+              <RescheduleConfirm
+                original={original}
+                selected={selected}
+                durationMinutes={effectiveDuration}
+                onBack={() => animateOut(1)}
+                onConfirm={handleReschedule}
+              />
+            ) : (
+              <BookingForm
+                selected={selected}
+                linkToken={token}
+                durationMinutes={effectiveDuration}
+                eventType={eventType}
+                onBack={() => animateOut(1)}
+                onConfirm={handleConfirm}
+              />
+            )
           )}
 
           {/* Step 3 — success */}
-          {step === 3 && booking && <SuccessScreen booking={booking} eventType={eventType} durationMinutes={effectiveDuration} />}
+          {step === 3 && booking && (
+            <SuccessScreen
+              booking={booking}
+              eventType={eventType}
+              durationMinutes={effectiveDuration}
+              heading={isReschedule ? 'Reserva\nreagendada.' : undefined}
+              rescheduleHref={isReschedule ? undefined : `?reschedule=${encodeURIComponent(booking.booking_id)}`}
+            />
+          )}
         </main>
 
         {/* Footer */}

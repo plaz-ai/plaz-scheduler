@@ -13,9 +13,11 @@ interface Props {
   booking: BookingResult;
   eventType?: EventType | null;
   durationMinutes?: number;
+  heading?: string;            // "Reserva\nconfirmada." por defecto
+  rescheduleHref?: string;     // si se pasa, muestra el enlace "Reagendar"
 }
 
-export default function SuccessScreen({ booking, eventType, durationMinutes }: Props) {
+export default function SuccessScreen({ booking, eventType, durationMinutes, heading, rescheduleHref }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
 
@@ -79,8 +81,8 @@ export default function SuccessScreen({ booking, eventType, durationMinutes }: P
           <div className="success-icon inline-flex items-center justify-center w-11 h-11 rounded-full border border-amber/35 mb-6">
             <Check ref={checkRef} className="w-5 h-5 text-amber" weight="bold" />
           </div>
-          <h2 className="success-title font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92]">
-            Reserva<br />confirmada.
+          <h2 className="success-title font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] whitespace-pre-line">
+            {heading ?? 'Reserva\nconfirmada.'}
           </h2>
         </div>
 
@@ -146,12 +148,22 @@ export default function SuccessScreen({ booking, eventType, durationMinutes }: P
             </div>
           </div>
 
-          <a
-            href={booking.cancel_url}
-            className="cancel-link text-muted text-xs hover:text-cream transition-colors underline underline-offset-4"
-          >
-            Cancelar esta reserva
-          </a>
+          <div className="cancel-link flex items-center gap-4">
+            {rescheduleHref && (
+              <a
+                href={rescheduleHref}
+                className="text-muted text-xs hover:text-cream transition-colors underline underline-offset-4"
+              >
+                Reagendar
+              </a>
+            )}
+            <a
+              href={booking.cancel_url}
+              className="text-muted text-xs hover:text-cream transition-colors underline underline-offset-4"
+            >
+              Cancelar esta reserva
+            </a>
+          </div>
         </div>
 
       </div>
