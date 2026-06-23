@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { CircleNotch, CheckCircle, Warning } from '@phosphor-icons/react';
+import { CircleNotch, CheckCircle, Warning, ArrowLeft, ArrowRight } from '@phosphor-icons/react';
 import { cancelBooking, type CancelStatus } from '../agenda/api';
 
 gsap.registerPlugin(useGSAP);
@@ -60,10 +60,17 @@ export default function CancelPage({ bookingId, token }: Props) {
     <div className="min-h-[100dvh] flex flex-col bg-navy">
       <div className="absolute inset-0 dot-grid pointer-events-none" />
 
-      <header className="relative z-10 px-6 md:px-10 py-6 border-b border-cream/[0.06]">
-        <span className="font-display text-xl font-black tracking-tight text-cream select-none">
+      <header className="relative z-10 px-6 md:px-10 py-6 border-b border-cream/[0.06] flex items-center gap-4">
+        <button
+          onClick={() => window.history.back()}
+          className="text-muted hover:text-cream transition-colors cursor-pointer active:scale-[0.98]"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="w-4 h-4" weight="regular" />
+        </button>
+        <a href="/plaz-scheduler/agenda/" className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-80 transition-opacity">
           Plaz<span className="text-amber">.</span>
-        </span>
+        </a>
       </header>
 
       <main ref={ref} className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
@@ -81,9 +88,25 @@ export default function CancelPage({ bookingId, token }: Props) {
               <h2 className="cancel-el font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-4">
                 {msg!.title}
               </h2>
-              <p className="cancel-el text-muted text-sm leading-relaxed">
+              <p className="cancel-el text-muted text-sm leading-relaxed mb-8">
                 {msg!.body}
               </p>
+              <div className="cancel-el flex flex-wrap gap-3">
+                <a
+                  href="/plaz-scheduler/agenda/"
+                  className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.04] hover:bg-amber/[0.10] hover:border-amber/60 px-4 py-2.5 text-cream/80 text-sm transition-colors"
+                >
+                  <ArrowRight className="w-4 h-4 text-amber flex-none" weight="regular" />
+                  Nueva reserva
+                </a>
+                <button
+                  onClick={() => window.history.back()}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" weight="regular" />
+                  Volver
+                </button>
+              </div>
             </>
           )}
 
