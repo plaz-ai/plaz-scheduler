@@ -160,13 +160,19 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
         px-6 py-5 md:px-8 md:py-10
         border-b md:border-b-0 md:border-r border-cream/[0.06]
       ">
-        {/* Wordmark — resetea al inicio del flujo */}
-        <button
-          onClick={() => { setStep(1); setSelected(null); setBooking(null); setEventType(null); setDuration(null); }}
-          className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-75 transition-opacity cursor-pointer"
-        >
-          Plaz<span className="text-amber">.</span>
-        </button>
+        {/* Wordmark — resetea el flujo solo si aún no hay reserva confirmada */}
+        {booking ? (
+          <span className="font-display text-xl font-black tracking-tight text-cream select-none">
+            Plaz<span className="text-amber">.</span>
+          </span>
+        ) : (
+          <button
+            onClick={() => { setStep(1); setSelected(null); setEventType(null); setDuration(null); }}
+            className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-75 transition-opacity cursor-pointer"
+          >
+            Plaz<span className="text-amber">.</span>
+          </button>
+        )}
 
         {/* Organizer context — desktop only (estilo cal.com) */}
         {localData && (
