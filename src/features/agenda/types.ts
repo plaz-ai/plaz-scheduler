@@ -59,6 +59,7 @@ export interface BookingResult {
   start_utc: string;
   start_madrid: string;
   cancel_url: string;
+  duration_minutes?: number; // WF-01 lo devuelve; usado en add-to-calendar
 }
 
 // Reagendar (estilo cal.com): el invitado abre un link con el uid de su reserva,

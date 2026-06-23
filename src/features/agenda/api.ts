@@ -1,5 +1,5 @@
 import type { AvailabilityResponse, BookingPayload, BookingResult, RescheduleInfo, ReschedulePayload } from './types';
-import { mockAvailability, mockBooking, mockRescheduleInfo, mockReschedule } from './mock';
+import { mockAvailability, mockBooking, mockRescheduleInfo, mockReschedule, mockCancel } from './mock';
 
 const BASE = process.env.NEXT_PUBLIC_N8N_BASE_URL ?? '';
 
@@ -59,8 +59,12 @@ export async function createBooking(payload: BookingPayload): Promise<BookingRes
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`${res.status}: ${text}`);
+    let msg = `Error ${res.status}`;
+    try {
+      const body = await res.json() as { message?: string; error?: string };
+      msg = body.message ?? body.error ?? msg;
+    } catch { /* cuerpo no es JSON */ }
+    throw new Error(msg);
   }
 
   const booking = await res.json() as Partial<BookingResult> & { status?: string; message?: string };
@@ -73,6 +77,30 @@ export async function createBooking(payload: BookingPayload): Promise<BookingRes
     status: 'confirmed',
     start_madrid: booking.start_madrid ?? formatMadridDateTime(booking.start_utc),
   } as BookingResult;
+}
+
+// --- Cancelar ---
+export type CancelStatus = 'cancelled' | 'already_cancelled' | 'not_found' | 'invalid_token';
+
+export async function cancelBooking(bookingId: string, token: string): Promise<CancelStatus> {
+  if (USE_MOCK) {
+    await delay(null, 600);
+    return mockCancel(bookingId);
+  }
+
+  const res = await fetch(
+    `${BASE}/webhook/plaz-scheduler-cancel?booking_id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(token)}`,
+    { cache: 'no-store' }
+  );
+
+  if (res.status === 404) return 'not_found';
+  if (res.status === 403) return 'invalid_token';
+  if (!res.ok) return 'invalid_token';
+
+  // WF-07 devuelve HTML; buscamos un indicador de "ya cancelado" en el texto
+  const html = await res.text().catch(() => '');
+  if (html.toLowerCase().includes('ya cancelad')) return 'already_cancelled';
+  return 'cancelled';
 }
 
 // --- Reagendar ---

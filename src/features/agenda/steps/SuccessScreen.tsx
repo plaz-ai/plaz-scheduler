@@ -22,9 +22,24 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, hea
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
 
+  // Construye la URL de cancelación apuntando a nuestra propia página,
+  // extrayendo booking_id y token del cancel_url que devuelve el backend.
+  function buildCancelHref(rawUrl: string): string {
+    try {
+      const u = new URL(rawUrl);
+      const id = u.searchParams.get('booking_id');
+      const tok = u.searchParams.get('token');
+      if (id && tok) {
+        return `/plaz-scheduler/cancelar/?booking_id=${encodeURIComponent(id)}&token=${encodeURIComponent(tok)}`;
+      }
+    } catch { /* URL inválida — usa la original */ }
+    return rawUrl;
+  }
+
   // Evento de calendario derivado de la reserva (cliente, sin backend).
   const start = new Date(booking.start_utc);
-  const dur = durationMinutes && durationMinutes > 0 ? durationMinutes : 30;
+  // Usa duration_minutes del backend si viene; si no, el prop del tipo de evento.
+  const dur = booking.duration_minutes ?? (durationMinutes && durationMinutes > 0 ? durationMinutes : 30);
   const calEvent: CalEvent = {
     title: eventType?.title ?? `Reunión con ${booking.host_name}`,
     start,
@@ -169,7 +184,7 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, hea
               </a>
             )}
             <a
-              href={booking.cancel_url}
+              href={buildCancelHref(booking.cancel_url)}
               className="text-cream/50 text-xs hover:text-cream/80 transition-colors underline underline-offset-4"
             >
               Cancelar esta reserva

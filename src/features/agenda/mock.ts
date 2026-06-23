@@ -124,6 +124,13 @@ export function mockRescheduleInfo(uid = ''): RescheduleInfo {
   };
 }
 
+export function mockCancel(bookingId: string): 'cancelled' | 'already_cancelled' | 'not_found' | 'invalid_token' {
+  if (bookingId.includes('notfound')) return 'not_found';
+  if (bookingId.includes('invalid')) return 'invalid_token';
+  if (bookingId.includes('already')) return 'already_cancelled';
+  return 'cancelled';
+}
+
 export function mockReschedule(payload: ReschedulePayload): BookingResult {
   const start = new Date(payload.slot_utc);
   return {

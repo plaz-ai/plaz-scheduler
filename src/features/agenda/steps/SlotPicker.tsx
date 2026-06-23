@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Clock, CaretLeft } from '@phosphor-icons/react';
+import { Clock, CaretLeft, ArrowRight } from '@phosphor-icons/react';
 import type { AvailabilityResponse, AvailableDay, TimeSlot } from '../types';
 import CalendarGrid from '../components/CalendarGrid';
 import TimeSlotButton from '../components/TimeSlotButton';
@@ -92,6 +92,24 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, dur
           </div>
         )}
       </div>
+
+      {/* Atajo "Lo antes posible" — solo cuando hay slots disponibles */}
+      {hasAnySlot && (() => {
+        const firstDay = data.available_days.find(d => d.slots.length > 0);
+        const firstSlot = firstDay?.slots[0];
+        if (!firstDay || !firstSlot) return null;
+        return (
+          <div className="mb-6">
+            <button
+              onClick={() => onSelect(firstDay, firstSlot)}
+              className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.04] hover:bg-amber/[0.10] hover:border-amber/60 px-4 py-2.5 text-cream/80 text-sm transition-colors cursor-pointer active:scale-[0.98]"
+            >
+              <ArrowRight className="w-4 h-4 text-amber flex-none" weight="regular" />
+              Lo antes posible — {firstDay.short_label} · {firstSlot.start_madrid}
+            </button>
+          </div>
+        );
+      })()}
 
       {hasAnySlot ? (
         <div className="flex flex-col md:flex-row md:gap-0">
