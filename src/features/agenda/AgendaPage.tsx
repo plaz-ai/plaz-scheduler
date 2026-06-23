@@ -301,6 +301,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               data={localData}
               selectedSlotUtc={selected?.slot.start_utc}
               durationMinutes={effectiveDuration}
+              tzLabel={tzShortName(userTz)}
               durations={eventType?.available_durations}
               onDurationChange={setDuration}
               onSelect={handleSlotSelect}
@@ -353,7 +354,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
         {/* Footer */}
         <footer className="relative z-10 px-6 md:px-8 lg:px-10 pb-6 md:pb-8">
           <p className="text-subtle text-[10px]">
-            Horas en horario de Madrid · Plaz {new Date().getFullYear()}
+            Horas en {tzShortName(userTz)} · Plaz {new Date().getFullYear()}
           </p>
         </footer>
       </div>

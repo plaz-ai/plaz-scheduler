@@ -14,13 +14,14 @@ interface Props {
   data: AvailabilityResponse;
   selectedSlotUtc?: string;
   durationMinutes: number;
+  tzLabel?: string;
   durations?: number[];
   onDurationChange?: (minutes: number) => void;
   onSelect: (day: AvailableDay, slot: TimeSlot) => void;
   onChangeEventType?: () => void; // botón "← Cambiar tipo" en móvil
 }
 
-export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, durations, onDurationChange, onSelect, onChangeEventType }: Props) {
+export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzLabel, durations, onDurationChange, onSelect, onChangeEventType }: Props) {
   const slotsRef = useRef<HTMLDivElement>(null);
   const [activeDay, setActiveDay] = useState<AvailableDay | null>(null);
 
@@ -66,7 +67,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, dur
         </h1>
         <div className="flex items-center gap-2">
           <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
-          <span className="text-muted text-xs">{durationMinutes} min · Madrid</span>
+          <span className="text-muted text-xs">{durationMinutes} min · {tzLabel ?? 'Madrid'}</span>
         </div>
 
         {/* Selector de duración (cal.com) — solo si el tipo ofrece varias */}
