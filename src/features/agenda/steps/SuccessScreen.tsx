@@ -13,12 +13,14 @@ interface Props {
   booking: BookingResult;
   eventType?: EventType | null;
   durationMinutes?: number;
+  userTz?: string;             // TZ del invitado para formatear la hora confirmada
   heading?: string;            // "Reserva\nconfirmada." por defecto
   rescheduleHref?: string;     // si se pasa, muestra el enlace "Reagendar"
   onStartOver?: () => void;    // "Volver al inicio" para hacer otra reserva
 }
 
-export default function SuccessScreen({ booking, eventType, durationMinutes, heading, rescheduleHref, onStartOver }: Props) {
+export default function SuccessScreen({ booking, eventType, durationMinutes, userTz, heading, rescheduleHref, onStartOver }: Props) {
+  const tz = userTz || 'Europe/Madrid';
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
 
@@ -77,16 +79,19 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, hea
     { scope: ref }
   );
 
-  const when = booking.start_madrid || (booking.start_utc
-    ? new Intl.DateTimeFormat('es-ES', {
-        timeZone: 'Europe/Madrid',
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(new Date(booking.start_utc))
-    : '');
+  const when = booking.start_utc
+    ? (() => {
+        const raw = new Intl.DateTimeFormat('es-ES', {
+          timeZone: tz,
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(new Date(booking.start_utc));
+        return raw.charAt(0).toUpperCase() + raw.slice(1);
+      })()
+    : booking.start_madrid;
 
   return (
     <div ref={ref} className="step-panel">

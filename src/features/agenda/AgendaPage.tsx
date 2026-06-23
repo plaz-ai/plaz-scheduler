@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { fetchAvailability, createBooking, fetchRescheduleInfo, rescheduleBooking } from './api';
@@ -14,6 +14,7 @@ import type {
   EventType,
   RescheduleOriginal,
 } from './types';
+import { getUserTimezone, tzShortName, regroupByTimezone } from './lib/timezone';
 import SlotPicker from './steps/SlotPicker';
 import BookingForm from './steps/BookingForm';
 import SuccessScreen from './steps/SuccessScreen';
@@ -50,12 +51,19 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
 
   const [step, setStep] = useState<Step>(1);
   const [data, setData] = useState<AvailabilityResponse | null>(null);
+  const [userTz] = useState<string>(() => getUserTimezone());
   const [original, setOriginal] = useState<RescheduleOriginal | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<SelectedSlot | null>(null);
   const [booking, setBooking] = useState<BookingResult | null>(null);
   const [eventType, setEventType] = useState<EventType | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
+
+  // Datos reagrupados por TZ del invitado (transformación puramente de display).
+  const localData = useMemo(
+    () => (data ? regroupByTimezone(data, userTz) : null),
+    [data, userTz],
+  );
 
   // Tipos de evento (clon cal.com). Si el backend no los envía (producción),
   // la lista queda vacía y el selector se omite: el flujo es el de siempre.
@@ -158,13 +166,13 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
         </span>
 
         {/* Organizer context — desktop only (estilo cal.com) */}
-        {data && (
+        {localData && (
           <div className="hidden md:block mt-8 space-y-4">
             <div className="flex items-center gap-3">
               <span className="flex-none w-9 h-9 rounded-full border border-amber/35 flex items-center justify-center text-amber text-xs font-bold">
-                {initials(data.team_name)}
+                {initials(localData.team_name)}
               </span>
-              <span className="text-cream text-sm font-medium leading-tight">{data.team_name}</span>
+              <span className="text-cream text-sm font-medium leading-tight">{localData.team_name}</span>
             </div>
 
             <div className="space-y-2.5 pt-1">
@@ -184,7 +192,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               </p>
               <p className="flex items-center gap-2.5 text-muted text-xs">
                 <Globe className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
-                <span className="truncate">Horario de Madrid</span>
+                <span className="truncate">{tzShortName(userTz)}</span>
               </p>
             </div>
 
@@ -234,7 +242,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
         <main ref={containerRef} className="flex-1 relative z-10 px-6 md:px-8 lg:px-10 py-8 md:py-10">
 
           {/* Loading skeleton — matches calendar layout */}
-          {!data && !loadError && (
+          {!localData && !loadError && (
             <div className="step-panel">
               <div className="mb-8 space-y-3">
                 <div className="h-12 w-48 bg-navy-mid rounded animate-pulse" />
@@ -271,10 +279,10 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
           )}
 
           {/* Link expired / exhausted */}
-          {data && (data.link_expired || data.link_exhausted) && (
+          {localData && (localData.link_expired || localData.link_exhausted) && (
             <div className="step-panel py-20">
               <p className="text-cream text-base mb-3">
-                {data.link_expired
+                {localData.link_expired
                   ? 'Este link de agenda ha expirado.'
                   : 'Este link ya no tiene citas disponibles.'}
               </p>
@@ -283,14 +291,14 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
           )}
 
           {/* Step 0 — event type picker (clon cal.com) */}
-          {data && !data.link_expired && !data.link_exhausted && needsEventTypeChoice && (
+          {localData && !localData.link_expired && !localData.link_exhausted && needsEventTypeChoice && (
             <EventTypePicker eventTypes={eventTypes} onSelect={handleEventTypeSelect} />
           )}
 
           {/* Step 1 — slot picker */}
-          {data && !data.link_expired && !data.link_exhausted && !needsEventTypeChoice && step === 1 && (
+          {localData && !localData.link_expired && !localData.link_exhausted && !needsEventTypeChoice && step === 1 && (
             <SlotPicker
-              data={data}
+              data={localData}
               selectedSlotUtc={selected?.slot.start_utc}
               durationMinutes={effectiveDuration}
               durations={eventType?.available_durations}
@@ -301,7 +309,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
           )}
 
           {/* Step 2 — confirmación: reagendar o formulario de reserva */}
-          {data && !data.link_expired && !data.link_exhausted && !needsEventTypeChoice && step === 2 && selected && (
+          {localData && !localData.link_expired && !localData.link_exhausted && !needsEventTypeChoice && step === 2 && selected && (
             isReschedule && original ? (
               <RescheduleConfirm
                 original={original}
@@ -328,6 +336,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               booking={booking}
               eventType={eventType}
               durationMinutes={effectiveDuration}
+              userTz={userTz}
               heading={isReschedule ? 'Reserva\nreagendada.' : undefined}
               rescheduleHref={isReschedule ? undefined : `?reschedule=${encodeURIComponent(booking.booking_id)}`}
               onStartOver={isReschedule ? undefined : () => {
