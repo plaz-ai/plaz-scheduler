@@ -9,17 +9,48 @@ export function getUserTimezone(): string {
   }
 }
 
-/** Nombre corto de la zona horaria para mostrar en UI ("CEST", "GMT-5", …). */
-export function tzShortName(tz: string): string {
-  try {
-    const parts = new Intl.DateTimeFormat('es-ES', {
-      timeZone: tz,
-      timeZoneName: 'short',
-    }).formatToParts(new Date());
-    return parts.find(p => p.type === 'timeZoneName')?.value ?? tz;
-  } catch {
-    return tz;
-  }
+/** Ciudad legible para mostrar en UI ("Madrid", "Ciudad de México", "Buenos Aires"). */
+const TZ_CITIES: Record<string, string> = {
+  'Europe/Madrid': 'Madrid',
+  'Europe/London': 'Londres',
+  'Europe/Paris': 'París',
+  'Europe/Berlin': 'Berlín',
+  'Europe/Rome': 'Roma',
+  'Europe/Lisbon': 'Lisboa',
+  'America/Mexico_City': 'Ciudad de México',
+  'America/Bogota': 'Bogotá',
+  'America/Lima': 'Lima',
+  'America/Santiago': 'Santiago',
+  'America/Buenos_Aires': 'Buenos Aires',
+  'America/Argentina/Buenos_Aires': 'Buenos Aires',
+  'America/Caracas': 'Caracas',
+  'America/Guayaquil': 'Guayaquil',
+  'America/La_Paz': 'La Paz',
+  'America/Asuncion': 'Asunción',
+  'America/Montevideo': 'Montevideo',
+  'America/Havana': 'La Habana',
+  'America/Santo_Domingo': 'Santo Domingo',
+  'America/Panama': 'Panamá',
+  'America/Costa_Rica': 'San José',
+  'America/Managua': 'Managua',
+  'America/Tegucigalpa': 'Tegucigalpa',
+  'America/Guatemala': 'Ciudad de Guatemala',
+  'America/El_Salvador': 'San Salvador',
+  'America/New_York': 'Nueva York',
+  'America/Los_Angeles': 'Los Ángeles',
+  'America/Chicago': 'Chicago',
+  'America/Denver': 'Denver',
+  'America/Miami': 'Miami',
+  'America/Sao_Paulo': 'São Paulo',
+  'America/Toronto': 'Toronto',
+  'America/Vancouver': 'Vancouver',
+};
+
+export function tzCityName(tz: string): string {
+  if (TZ_CITIES[tz]) return TZ_CITIES[tz];
+  // Fallback: extrae la ciudad del identificador IANA ("America/New_York" → "New York")
+  const city = tz.split('/').pop() ?? tz;
+  return city.replace(/_/g, ' ');
 }
 
 /**

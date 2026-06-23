@@ -14,7 +14,7 @@ import type {
   EventType,
   RescheduleOriginal,
 } from './types';
-import { getUserTimezone, tzShortName, regroupByTimezone } from './lib/timezone';
+import { getUserTimezone, tzCityName, regroupByTimezone } from './lib/timezone';
 import SlotPicker from './steps/SlotPicker';
 import BookingForm from './steps/BookingForm';
 import SuccessScreen from './steps/SuccessScreen';
@@ -192,7 +192,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               </p>
               <p className="flex items-center gap-2.5 text-muted text-xs">
                 <Globe className="w-3.5 h-3.5 text-amber/70 flex-none" weight="regular" />
-                <span className="truncate">{tzShortName(userTz)}</span>
+                <span className="truncate">{tzCityName(userTz)}</span>
               </p>
             </div>
 
@@ -301,7 +301,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               data={localData}
               selectedSlotUtc={selected?.slot.start_utc}
               durationMinutes={effectiveDuration}
-              tzLabel={tzShortName(userTz)}
+              tzLabel={tzCityName(userTz)}
               durations={eventType?.available_durations}
               onDurationChange={setDuration}
               onSelect={handleSlotSelect}
@@ -354,7 +354,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
         {/* Footer */}
         <footer className="relative z-10 px-6 md:px-8 lg:px-10 pb-6 md:pb-8">
           <p className="text-subtle text-[10px]">
-            Horas en {tzShortName(userTz)} · Plaz {new Date().getFullYear()}
+            Horas en {tzCityName(userTz)} · Plaz {new Date().getFullYear()}
           </p>
         </footer>
       </div>
