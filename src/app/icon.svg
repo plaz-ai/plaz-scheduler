@@ -1,16 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- Fondo navy con esquinas redondeadas -->
+  <!-- Squircle navy -->
   <rect width="32" height="32" rx="7" fill="#0D1117"/>
-  <!-- "P" en cream -->
-  <text
-    x="5"
-    y="24"
-    font-family="-apple-system, 'Plus Jakarta Sans', sans-serif"
-    font-size="22"
-    font-weight="800"
-    fill="#F5F0E8"
-    letter-spacing="-0.5"
-  >P</text>
-  <!-- Punto ámbar -->
-  <circle cx="23" cy="22" r="3" fill="#E8A020"/>
+
+  <!-- Letra P: barra vertical izquierda -->
+  <rect x="7" y="7" width="4" height="18" rx="2" fill="#EDE8DC"/>
+
+  <!-- Letra P: lóbulo (arco derecho) dibujado como stroke para consistencia a tamaños pequeños -->
+  <path
+    d="M 11 8.5 H 17.5 Q 24 8.5 24 14 Q 24 19.5 17.5 19.5 H 11"
+    stroke="#EDE8DC"
+    stroke-width="3.5"
+    stroke-linecap="butt"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <!-- Punto ámbar (el "." de "Plaz.") -->
+  <circle cx="26" cy="24" r="2.8" fill="#E8A020"/>
 </svg>
