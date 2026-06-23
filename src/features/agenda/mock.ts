@@ -131,6 +131,10 @@ export function mockCancel(bookingId: string): 'cancelled' | 'already_cancelled'
   return 'cancelled';
 }
 
+function mockCancelUrl(bookingId: string): string {
+  return `/plaz-scheduler/cancelar/?booking_id=${encodeURIComponent(bookingId)}&token=mock-token`;
+}
+
 export function mockReschedule(payload: ReschedulePayload): BookingResult {
   const start = new Date(payload.slot_utc);
   return {
@@ -141,21 +145,21 @@ export function mockReschedule(payload: ReschedulePayload): BookingResult {
     start_madrid: start.toLocaleString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
     }),
-    cancel_url: `#cancelacion-${payload.booking_uid}`,
+    cancel_url: mockCancelUrl(payload.booking_uid),
   };
 }
 
 export function mockBooking(payload: BookingPayload): BookingResult {
   const start = new Date(payload.slot_utc);
-  const cancelToken = `mock-${start.getTime()}`;
+  const bookingId = `mock-${start.getTime()}`;
   return {
     status: 'confirmed',
-    booking_id: cancelToken,
+    booking_id: bookingId,
     host_name: 'Juana Gil',
     start_utc: payload.slot_utc,
     start_madrid: start.toLocaleString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
     }),
-    cancel_url: `#cancelacion-${cancelToken}`,
+    cancel_url: mockCancelUrl(bookingId),
   };
 }

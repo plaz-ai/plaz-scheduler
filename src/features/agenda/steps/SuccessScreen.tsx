@@ -27,6 +27,9 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
   // Construye la URL de cancelación apuntando a nuestra propia página,
   // extrayendo booking_id y token del cancel_url que devuelve el backend.
   function buildCancelHref(rawUrl: string): string {
+    // Si ya apunta a nuestra página de cancelación, úsala directamente (mock + futuro).
+    if (rawUrl.includes('/cancelar/')) return rawUrl;
+    // Backend real: URL absoluta del VPS con booking_id y token como params.
     try {
       const u = new URL(rawUrl);
       const id = u.searchParams.get('booking_id');
@@ -34,7 +37,7 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
       if (id && tok) {
         return `/plaz-scheduler/cancelar/?booking_id=${encodeURIComponent(id)}&token=${encodeURIComponent(tok)}`;
       }
-    } catch { /* URL inválida — usa la original */ }
+    } catch { /* URL inválida */ }
     return rawUrl;
   }
 
