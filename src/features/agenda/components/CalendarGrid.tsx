@@ -40,9 +40,11 @@ export default function CalendarGrid({ availableDays, selectedDate, onSelectDate
   const todayMadrid = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
   const grid = buildMonthGrid(viewYear, viewMonth);
 
-  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString('es-ES', {
+  // capitalize solo el mes, no el "de" (CSS capitalize eleva cada palabra)
+  const rawLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString('es-ES', {
     month: 'long', year: 'numeric',
   });
+  const monthLabel = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
 
   // Stagger cells in — fast (120ms total), cleared after so no inline styles persist
   useGSAP(
@@ -84,7 +86,7 @@ export default function CalendarGrid({ availableDays, selectedDate, onSelectDate
           <CaretLeft className="w-3.5 h-3.5" weight="bold" />
         </button>
 
-        <span className="text-cream text-xs font-semibold capitalize tracking-wide">
+        <span className="text-cream text-xs font-semibold tracking-wide">
           {monthLabel}
         </span>
 

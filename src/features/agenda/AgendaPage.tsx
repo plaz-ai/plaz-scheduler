@@ -296,6 +296,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               durations={eventType?.available_durations}
               onDurationChange={setDuration}
               onSelect={handleSlotSelect}
+              onChangeEventType={eventType && eventTypes.length > 1 ? () => { setEventType(null); setSelected(null); setDuration(null); } : undefined}
             />
           )}
 
@@ -329,6 +330,13 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               durationMinutes={effectiveDuration}
               heading={isReschedule ? 'Reserva\nreagendada.' : undefined}
               rescheduleHref={isReschedule ? undefined : `?reschedule=${encodeURIComponent(booking.booking_id)}`}
+              onStartOver={isReschedule ? undefined : () => {
+                setStep(1);
+                setSelected(null);
+                setBooking(null);
+                setEventType(null);
+                setDuration(null);
+              }}
             />
           )}
         </main>

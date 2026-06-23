@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Check, CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple } from '@phosphor-icons/react';
+import { Check, CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple, ArrowLeft } from '@phosphor-icons/react';
 import type { BookingResult, EventType } from '../types';
 import { googleCalendarUrl, outlookCalendarUrl, icsObjectUrl, type CalEvent } from '../lib/calendar-export';
 
@@ -15,9 +15,10 @@ interface Props {
   durationMinutes?: number;
   heading?: string;            // "Reserva\nconfirmada." por defecto
   rescheduleHref?: string;     // si se pasa, muestra el enlace "Reagendar"
+  onStartOver?: () => void;    // "Volver al inicio" para hacer otra reserva
 }
 
-export default function SuccessScreen({ booking, eventType, durationMinutes, heading, rescheduleHref }: Props) {
+export default function SuccessScreen({ booking, eventType, durationMinutes, heading, rescheduleHref, onStartOver }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
 
@@ -84,6 +85,16 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, hea
           <h2 className="success-title font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] whitespace-pre-line">
             {heading ?? 'Reserva\nconfirmada.'}
           </h2>
+
+          {onStartOver && (
+            <button
+              onClick={onStartOver}
+              className="success-title mt-6 inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer active:scale-[0.98]"
+            >
+              <ArrowLeft className="w-4 h-4" weight="regular" />
+              Hacer otra reserva
+            </button>
+          )}
         </div>
 
         {/* Right — summary card + cancel */}
@@ -148,18 +159,18 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, hea
             </div>
           </div>
 
-          <div className="cancel-link flex items-center gap-4">
+          <div className="cancel-link flex flex-wrap items-center gap-x-5 gap-y-2">
             {rescheduleHref && (
               <a
                 href={rescheduleHref}
-                className="text-muted text-xs hover:text-cream transition-colors underline underline-offset-4"
+                className="text-cream/60 text-xs hover:text-cream transition-colors underline underline-offset-4"
               >
                 Reagendar
               </a>
             )}
             <a
               href={booking.cancel_url}
-              className="text-muted text-xs hover:text-cream transition-colors underline underline-offset-4"
+              className="text-cream/50 text-xs hover:text-cream/80 transition-colors underline underline-offset-4"
             >
               Cancelar esta reserva
             </a>

@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Clock } from '@phosphor-icons/react';
+import { Clock, CaretLeft } from '@phosphor-icons/react';
 import type { AvailabilityResponse, AvailableDay, TimeSlot } from '../types';
 import CalendarGrid from '../components/CalendarGrid';
 import TimeSlotButton from '../components/TimeSlotButton';
@@ -17,9 +17,10 @@ interface Props {
   durations?: number[];
   onDurationChange?: (minutes: number) => void;
   onSelect: (day: AvailableDay, slot: TimeSlot) => void;
+  onChangeEventType?: () => void; // botón "← Cambiar tipo" en móvil
 }
 
-export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, durations, onDurationChange, onSelect }: Props) {
+export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, durations, onDurationChange, onSelect, onChangeEventType }: Props) {
   const slotsRef = useRef<HTMLDivElement>(null);
   const [activeDay, setActiveDay] = useState<AvailableDay | null>(null);
 
@@ -47,6 +48,17 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, dur
 
   return (
     <div className="step-panel">
+      {/* Botón "Cambiar tipo" — solo móvil, cuando hay selector de tipo */}
+      {onChangeEventType && (
+        <button
+          onClick={onChangeEventType}
+          className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-6 md:hidden cursor-pointer active:scale-[0.98]"
+        >
+          <CaretLeft className="w-4 h-4" weight="regular" />
+          Cambiar tipo de reunión
+        </button>
+      )}
+
       {/* Heading */}
       <div className="mb-6 md:mb-8">
         <h1 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-3">
@@ -117,9 +129,9 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, dur
                 </div>
               </>
             ) : (
-              <div className="hidden md:flex flex-col items-start justify-center min-h-[200px]">
+              <div className="flex flex-col items-start justify-center min-h-[120px] md:min-h-[200px]">
                 <p className="text-subtle text-xs leading-relaxed">
-                  Seleccioná un día<br />para ver los horarios
+                  Selecciona un día<br />para ver los horarios
                 </p>
               </div>
             )}
