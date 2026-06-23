@@ -159,7 +159,16 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
       ) : (
         <div className="py-12">
           <p className="text-muted text-base mb-2">No hay disponibilidad en los próximos días.</p>
-          <p className="text-subtle text-sm">Contactanos directamente para buscar un horario.</p>
+          <p className="text-subtle text-sm mb-6">Contáctanos directamente para buscar un horario.</p>
+          {onChangeEventType && (
+            <button
+              onClick={onChangeEventType}
+              className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer active:scale-[0.98]"
+            >
+              <CaretLeft className="w-4 h-4" weight="regular" />
+              Elegir otro tipo de reunión
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -20,7 +20,7 @@ import BookingForm from './steps/BookingForm';
 import SuccessScreen from './steps/SuccessScreen';
 import EventTypePicker from './steps/EventTypePicker';
 import RescheduleConfirm from './steps/RescheduleConfirm';
-import { Clock, Globe, CalendarBlank } from '@phosphor-icons/react';
+import { Clock, Globe, CalendarBlank, CaretLeft } from '@phosphor-icons/react';
 
 gsap.registerPlugin(useGSAP);
 
@@ -277,7 +277,14 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
           {loadError && (
             <div className="step-panel py-20">
               <p className="text-red-400 text-base mb-2">{loadError}</p>
-              <p className="text-subtle text-sm">Si el problema persiste, contactanos directamente.</p>
+              <p className="text-subtle text-sm mb-6">Si el problema persiste, contáctanos directamente.</p>
+              <button
+                onClick={() => window.history.back()}
+                className="inline-flex items-center gap-2 text-muted text-sm hover:text-cream transition-colors cursor-pointer"
+              >
+                <CaretLeft className="w-4 h-4" weight="regular" />
+                Volver
+              </button>
             </div>
           )}
 
@@ -289,7 +296,14 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
                   ? 'Este link de agenda ha expirado.'
                   : 'Este link ya no tiene citas disponibles.'}
               </p>
-              <p className="text-subtle text-sm">Contactanos directamente para coordinar una cita.</p>
+              <p className="text-subtle text-sm mb-6">Contáctanos directamente para coordinar una cita.</p>
+              <button
+                onClick={() => window.history.back()}
+                className="inline-flex items-center gap-2 text-muted text-sm hover:text-cream transition-colors cursor-pointer"
+              >
+                <CaretLeft className="w-4 h-4" weight="regular" />
+                Volver
+              </button>
             </div>
           )}
 
