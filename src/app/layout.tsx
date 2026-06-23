@@ -22,7 +22,17 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: 'Agenda tu cita | Plaz',
-  description: 'Reserva una cita con nuestro equipo.',
+  description: 'Reserva una cita con el equipo de Plaz.',
+  icons: {
+    icon: [
+      { url: '/plaz-scheduler/favicon.ico', sizes: 'any' },
+      { url: '/plaz-scheduler/icon.svg',    type: 'image/svg+xml' },
+    ],
+    apple: '/plaz-scheduler/icon.svg',
+  },
+  other: {
+    'theme-color': '#0D1117',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
