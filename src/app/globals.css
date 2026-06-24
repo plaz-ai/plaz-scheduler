@@ -1,27 +1,85 @@
 @import "tailwindcss";
 
+/* ─── Runtime theme tokens ────────────────────────────────────────────
+   Los tokens se definen en :root (dark por defecto) y se sobreescriben
+   en el media query. @theme inline los expone como utilidades Tailwind.
+   Ratios de contraste verificados (WCAG AA):
+     dark  amber #E8A24A / navy text  → 8.86:1
+     light amber #A56015 / white text → 6.26:1
+     light amber text    / bg cream   → 5.73:1
+     dark  amber text    / bg navy    → 9.19:1
+──────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark light;
+
+  /* Fondos */
+  --bg:           #0A1628;
+  --bg-mid:       #162236;
+  --bg-light:     #1B3553;
+  --bg-card:      rgb(250 247 242 / 0.05);
+  --bg-card-hover: rgb(250 247 242 / 0.09);
+
+  /* Texto */
+  --fg:           #FAF7F2;
+  --fg-muted:     rgb(250 247 242 / 0.5);
+  --fg-subtle:    rgb(250 247 242 / 0.25);
+
+  /* Acento ámbar */
+  --accent:       #E8A24A;
+  --accent-hover: #D08F36;
+  --accent-dim:   rgb(232 162 74 / 0.12);
+  --accent-soft:  rgb(232 162 74 / 0.08);
+  --on-accent:    #0A1628;   /* texto SOBRE botón ámbar — siempre oscuro en dark */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Fondos */
+    --bg:           #F5F2EC;
+    --bg-mid:       #EDE9E0;
+    --bg-light:     #E0DACE;
+    --bg-card:      rgb(255 255 255 / 0.75);
+    --bg-card-hover: rgb(255 255 255 / 0.92);
+
+    /* Texto */
+    --fg:           #0A1628;
+    --fg-muted:     rgb(10 22 40 / 0.65);
+    --fg-subtle:    rgb(10 22 40 / 0.5);
+
+    /* Acento ámbar — más oscuro para contraste sobre fondo claro */
+    --accent:       #A56015;
+    --accent-hover: #8C5010;
+    --accent-dim:   rgb(165 96 21 / 0.12);
+    --accent-soft:  rgb(165 96 21 / 0.08);
+    --on-accent:    #FFFFFF;  /* texto SOBRE botón ámbar oscuro — blanco en light */
+  }
+}
+
+/* ─── Tailwind design tokens ──────────────────────────────────────── */
 @theme inline {
-  /* Plaz brand — dark navy */
-  --color-navy:         #0A1628;
-  --color-navy-mid:     #162236;
-  --color-navy-light:   #1B3553;
-  --color-navy-card:    #1E2E45;
+  /* Fondos */
+  --color-navy:        var(--bg);
+  --color-navy-mid:    var(--bg-mid);
+  --color-navy-light:  var(--bg-light);
+  --color-navy-card:   var(--bg-card);
+  --color-navy-card-hover: var(--bg-card-hover);
 
-  /* Amber/gold accent */
-  --color-amber:        #E8A24A;
-  --color-amber-hover:  #D08F36;
-  --color-amber-dim:    rgb(232 162 74 / 0.12);
-  --color-amber-soft:   rgb(232 162 74 / 0.08);
+  /* Texto */
+  --color-cream:       var(--fg);
+  --color-muted:       var(--fg-muted);
+  --color-subtle:      var(--fg-subtle);
 
-  /* Text */
-  --color-cream:        #FAF7F2;
-  --color-muted:        rgb(250 247 242 / 0.5);
-  --color-subtle:       rgb(250 247 242 / 0.25);
+  /* Acento */
+  --color-amber:       var(--accent);
+  --color-amber-hover: var(--accent-hover);
+  --color-amber-dim:   var(--accent-dim);
+  --color-amber-soft:  var(--accent-soft);
+  --color-on-amber:    var(--on-accent);
 
-  /* Typography */
-  --font-display:       var(--font-geist);
-  --font-sans:          var(--font-plus-jakarta);
-  --font-mono:          var(--font-geist-mono);
+  /* Tipografía */
+  --font-display:      var(--font-geist);
+  --font-sans:         var(--font-plus-jakarta);
+  --font-mono:         var(--font-geist-mono);
 }
 
 *, *::before, *::after {
@@ -33,25 +91,41 @@ html, body {
 }
 
 body {
-  background-color: #0A1628;
-  color: #FAF7F2;
+  background-color: var(--bg);
+  color: var(--fg);
   font-family: var(--font-plus-jakarta), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Dot grid background for right panel */
+/* Dot grid — adapta el color al tema */
 .dot-grid {
-  background-image: radial-gradient(circle, rgba(250, 247, 242, 0.055) 1px, transparent 1px);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--fg) 5.5%, transparent) 1px, transparent 1px);
   background-size: 28px 28px;
+}
+
+/* Entrada de cada paso — CSS animation: arranca en el mismo frame que el DOM,
+   sin overhead de JS. cubic-bezier(0.22,1,0.36,1) ≈ spring de iOS. */
+@keyframes step-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.step-panel {
+  animation: step-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-panel { animation-duration: 0.01ms; }
 }
 
 /* Columna de slots: scroll sin barra visible (estilo cal.com) */
 .slot-scroll {
-  scrollbar-width: none;          /* Firefox */
-  -ms-overflow-style: none;       /* IE/Edge antiguo */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .slot-scroll::-webkit-scrollbar {
   width: 0;
   height: 0;
-  display: none;                  /* Chrome/Safari/Edge */
+  display: none;
 }

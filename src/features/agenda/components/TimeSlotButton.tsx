@@ -38,7 +38,7 @@ export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
       {/* Confirmar — aparece en hover (desktop) */}
       <span
         className={[
-          'flex items-center justify-center bg-amber text-navy text-xs font-semibold',
+          'flex items-center justify-center bg-amber text-on-amber text-xs font-semibold',
           'transition-all duration-150 overflow-hidden',
           'w-0 opacity-0 group-hover:flex-1 group-hover:opacity-100',
         ].join(' ')}

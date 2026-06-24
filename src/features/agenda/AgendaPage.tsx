@@ -1,8 +1,7 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, startTransition } from 'react';
 import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 import { fetchAvailability, createBooking, fetchRescheduleInfo, rescheduleBooking } from './api';
 import type {
   AvailabilityResponse,
@@ -21,8 +20,6 @@ import SuccessScreen from './steps/SuccessScreen';
 import EventTypePicker from './steps/EventTypePicker';
 import RescheduleConfirm from './steps/RescheduleConfirm';
 import { Clock, Globe, CalendarBlank, CaretLeft } from '@phosphor-icons/react';
-
-gsap.registerPlugin(useGSAP);
 
 // Iniciales para el avatar del organizador ("Equipo Comercial" → "EC").
 function initials(name: string): string {
@@ -75,19 +72,6 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
     ? (original?.duration_minutes ?? data?.duration_minutes ?? 0)
     : (duration ?? eventType?.length_minutes ?? data?.duration_minutes ?? 0);
 
-  // Clip-path wipe reveal on every step/state change
-  useGSAP(
-    () => {
-      const panel = containerRef.current?.querySelector('.step-panel');
-      if (!panel) return;
-      gsap.fromTo(
-        panel,
-        { clipPath: 'inset(0 100% 0 0)' },
-        { clipPath: 'inset(0 0% 0 0)', duration: 0.45, ease: 'power2.out' }
-      );
-    },
-    { scope: containerRef, dependencies: [step, loadError, data, eventType] }
-  );
 
   useEffect(() => {
     if (isReschedule) {
@@ -103,12 +87,11 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
 
   function animateOut(next: Step) {
     const panel = containerRef.current?.querySelector('.step-panel');
-    if (!panel) { setStep(next); return; }
+    if (!panel) { startTransition(() => setStep(next)); return; }
     gsap.to(panel, {
-      clipPath: 'inset(0 0 0 100%)',
-      duration: 0.25,
-      ease: 'power2.in',
-      onComplete: () => setStep(next),
+      opacity: 0, y: -8,
+      duration: 0.18, ease: 'power3.in',
+      onComplete: () => startTransition(() => setStep(next)),
     });
   }
 
@@ -118,14 +101,13 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
   }
 
   function handleEventTypeSelect(et: EventType) {
-    setDuration(null); // usa la duración por defecto del nuevo tipo
+    setDuration(null);
     const panel = containerRef.current?.querySelector('.step-panel');
     if (!panel) { setEventType(et); return; }
     gsap.to(panel, {
-      clipPath: 'inset(0 0 0 100%)',
-      duration: 0.25,
-      ease: 'power2.in',
-      onComplete: () => setEventType(et),
+      opacity: 0, y: -8,
+      duration: 0.18, ease: 'power3.in',
+      onComplete: () => startTransition(() => setEventType(et)),
     });
   }
 
@@ -168,7 +150,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
         ) : (
           <button
             onClick={() => { setStep(1); setSelected(null); setEventType(null); setDuration(null); }}
-            className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-75 transition-opacity cursor-pointer"
+            className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-75 transition-opacity cursor-pointer rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
           >
             Plaz<span className="text-amber">.</span>
           </button>
@@ -209,7 +191,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
             {eventType && eventTypes.length > 1 && step === 1 && !booking && (
               <button
                 onClick={() => { setEventType(null); setSelected(null); setDuration(null); }}
-                className="text-subtle text-[11px] hover:text-cream transition-colors underline underline-offset-4"
+                className="text-subtle text-[11px] hover:text-cream transition-colors underline underline-offset-4 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 Cambiar tipo de reunión
               </button>
@@ -219,33 +201,41 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
 
         <div className="hidden md:flex flex-1" />
 
-        {/* Step counter */}
-        <div className="flex md:flex-col items-baseline gap-2 md:gap-0">
-          <span className="font-display font-black text-3xl md:text-5xl text-cream leading-none">
-            {needsEventTypeChoice ? '·' : String(step).padStart(2, '0')}
-          </span>
-          {!needsEventTypeChoice && <span className="text-subtle text-sm md:mt-1">/&thinsp;03</span>}
-        </div>
-
-        {/* Step label — desktop only */}
-        <p className="hidden md:block text-subtle text-[10px] mt-2 uppercase tracking-widest">
-          {needsEventTypeChoice ? 'Tipo de reunión' : isReschedule && step === 2 ? 'Confirmar cambio' : STEP_LABELS[step]}
-        </p>
+        {/* Step counter — solo en pasos numerados */}
+        {needsEventTypeChoice ? (
+          <p className="hidden md:block text-subtle text-[10px] uppercase tracking-widest">Tipo de reunión</p>
+        ) : (
+          <>
+            <div className="flex md:flex-col items-baseline gap-2 md:gap-0">
+              <span className="font-display font-black text-3xl md:text-5xl text-cream leading-none">
+                {String(step).padStart(2, '0')}
+              </span>
+              <span className="text-subtle text-sm md:mt-1">/&thinsp;03</span>
+            </div>
+            <p className="hidden md:block text-subtle text-[10px] mt-2 uppercase tracking-widest">
+              {isReschedule && step === 2 ? 'Confirmar cambio' : STEP_LABELS[step]}
+            </p>
+          </>
+        )}
       </aside>
 
       {/* ── Right panel ── */}
       <div className="flex-1 relative flex flex-col min-h-0">
         {/* Dot grid */}
         <div className="absolute inset-0 dot-grid pointer-events-none" />
+        {/* Glow ambiental ámbar — sutil calidez en esquina superior derecha */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 0%, rgb(232 162 74 / 0.07) 0%, transparent 55%)' }} />
 
-        {/* Step watermark */}
-        <div
-          className="absolute top-0 right-0 font-display font-black leading-[0.85] select-none pointer-events-none text-cream/[0.028] hidden md:block overflow-hidden"
-          style={{ fontSize: 'clamp(120px, 17vw, 210px)' }}
-          aria-hidden="true"
-        >
-          {String(step).padStart(2, '0')}
-        </div>
+        {/* Step watermark — solo cuando hay paso numerado (no en el selector de tipo) */}
+        {!needsEventTypeChoice && (
+          <div
+            className="absolute top-0 right-0 font-display font-black leading-[0.85] select-none pointer-events-none text-cream/[0.028] hidden md:block overflow-hidden"
+            style={{ fontSize: 'clamp(120px, 17vw, 210px)' }}
+            aria-hidden="true"
+          >
+            {String(step).padStart(2, '0')}
+          </div>
+        )}
 
         {/* Content */}
         <main ref={containerRef} className="flex-1 relative z-10 px-6 md:px-8 lg:px-10 py-8 md:py-10">
@@ -286,7 +276,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               <p className="text-subtle text-sm mb-6">Si el problema persiste, contáctanos directamente.</p>
               <button
                 onClick={() => window.history.back()}
-                className="inline-flex items-center gap-2 text-muted text-sm hover:text-cream transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 text-muted text-sm hover:text-cream transition-colors cursor-pointer rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 <CaretLeft className="w-4 h-4" weight="regular" />
                 Volver
@@ -305,7 +295,7 @@ export default function AgendaPage({ token, rescheduleUid }: Props) {
               <p className="text-subtle text-sm mb-6">Contáctanos directamente para coordinar una cita.</p>
               <button
                 onClick={() => window.history.back()}
-                className="inline-flex items-center gap-2 text-muted text-sm hover:text-cream transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 text-muted text-sm hover:text-cream transition-colors cursor-pointer rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 <CaretLeft className="w-4 h-4" weight="regular" />
                 Volver

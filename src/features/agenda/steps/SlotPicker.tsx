@@ -53,7 +53,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
       {onChangeEventType && (
         <button
           onClick={onChangeEventType}
-          className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-6 md:hidden cursor-pointer active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-6 md:hidden cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
         >
           <CaretLeft className="w-4 h-4" weight="regular" />
           Cambiar tipo de reunión
@@ -80,10 +80,10 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
                   key={min}
                   onClick={() => onDurationChange?.(min)}
                   className={[
-                    'rounded-lg border px-3 py-1.5 text-xs transition-colors cursor-pointer',
+                    'rounded-lg border px-3 py-1.5 text-xs transition-all duration-150 cursor-pointer backdrop-blur-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50',
                     active
-                      ? 'border-amber bg-amber text-navy font-semibold'
-                      : 'border-cream/[0.12] bg-cream/[0.02] text-cream/70 hover:border-amber/40 hover:text-cream',
+                      ? 'border-amber bg-amber text-on-amber font-semibold'
+                      : 'border-cream/[0.10] bg-navy-card text-cream/60 hover:border-amber/35 hover:text-cream hover:bg-navy-card-hover',
                   ].join(' ')}
                 >
                   {min} min
@@ -103,7 +103,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
           <div className="mb-6">
             <button
               onClick={() => onSelect(firstDay, firstSlot)}
-              className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.04] hover:bg-amber/[0.10] hover:border-amber/60 px-4 py-2.5 text-cream/80 text-sm transition-colors cursor-pointer active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.06] backdrop-blur-sm hover:bg-amber/[0.12] hover:border-amber/55 px-4 py-2.5 text-cream/85 text-sm transition-all duration-150 cursor-pointer active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
             >
               <ArrowRight className="w-4 h-4 text-amber flex-none" weight="regular" />
               Lo antes posible — {firstDay.short_label} · {firstSlot.start_madrid}
@@ -148,9 +148,12 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-start justify-center min-h-[120px] md:min-h-[200px]">
+              <div className="flex flex-col items-start justify-center min-h-[120px] md:min-h-[200px] gap-3">
+                <div className="w-8 h-8 rounded-lg border border-cream/[0.08] bg-navy-card backdrop-blur-sm flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-amber/50" weight="regular" />
+                </div>
                 <p className="text-subtle text-xs leading-relaxed">
-                  Selecciona un día<br />para ver los horarios
+                  Selecciona un día<br />para ver los horarios disponibles
                 </p>
               </div>
             )}
@@ -163,7 +166,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
           {onChangeEventType && (
             <button
               onClick={onChangeEventType}
-              className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
             >
               <CaretLeft className="w-4 h-4" weight="regular" />
               Elegir otro tipo de reunión

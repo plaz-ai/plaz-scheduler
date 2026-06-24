@@ -1,12 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
+import { useState } from 'react';
 import { CaretLeft, CircleNotch, ArrowRight } from '@phosphor-icons/react';
 import type { SelectedSlot, RescheduleOriginal } from '../types';
-
-gsap.registerPlugin(useGSAP);
 
 interface Props {
   original: RescheduleOriginal;
@@ -17,17 +13,9 @@ interface Props {
 }
 
 export default function RescheduleConfirm({ original, selected, durationMinutes, onBack, onConfirm }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useGSAP(
-    () => {
-      gsap.from('.form-field', { y: 14, opacity: 0, duration: 0.38, stagger: 0.09, ease: 'power2.out' });
-    },
-    { scope: ref }
-  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,10 +31,10 @@ export default function RescheduleConfirm({ original, selected, durationMinutes,
   }
 
   return (
-    <div ref={ref} className="step-panel">
+    <div className="step-panel">
       <button
         onClick={onBack}
-        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98]"
+        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
       >
         <CaretLeft className="w-4 h-4" weight="regular" />
         Elegir otro horario
@@ -103,7 +91,7 @@ export default function RescheduleConfirm({ original, selected, durationMinutes,
           <button
             type="submit"
             disabled={isSubmitting}
-            className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-navy font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98]"
+            className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-on-amber font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
           >
             {isSubmitting ? (
               <span className="inline-flex items-center justify-center gap-2">

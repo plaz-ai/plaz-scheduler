@@ -49,6 +49,7 @@ export default function CancelPage({ bookingId, token }: Props) {
   useGSAP(
     () => {
       if (!status) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       gsap.from('.cancel-el', { y: 18, opacity: 0, duration: 0.45, stagger: 0.09, ease: 'power2.out' });
     },
     { scope: ref, dependencies: [status] }
@@ -59,22 +60,24 @@ export default function CancelPage({ bookingId, token }: Props) {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-navy">
       <div className="absolute inset-0 dot-grid pointer-events-none" />
+      {/* Glow ambiental ámbar — coherente con AgendaPage */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 0%, rgb(232 162 74 / 0.07) 0%, transparent 55%)' }} />
 
       <header className="relative z-10 px-6 md:px-10 py-6 border-b border-cream/[0.06] flex items-center gap-4">
         <button
           onClick={() => window.history.back()}
-          className="text-muted hover:text-cream transition-colors cursor-pointer active:scale-[0.98]"
+          className="text-muted hover:text-cream transition-colors cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
           aria-label="Volver"
         >
           <ArrowLeft className="w-4 h-4" weight="regular" />
         </button>
-        <a href="/plaz-scheduler/agenda/" className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-80 transition-opacity">
+        <a href="/plaz-scheduler/agenda/" className="font-display text-xl font-black tracking-tight text-cream select-none hover:opacity-80 transition-opacity rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50">
           Plaz<span className="text-amber">.</span>
         </a>
       </header>
 
       <main ref={ref} className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md" role="status" aria-live="polite" aria-busy={!status}>
 
           {!status ? (
             /* Spinner mientras la API responde */
@@ -94,14 +97,14 @@ export default function CancelPage({ bookingId, token }: Props) {
               <div className="cancel-el flex flex-wrap gap-3">
                 <a
                   href="/plaz-scheduler/agenda/"
-                  className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.04] hover:bg-amber/[0.10] hover:border-amber/60 px-4 py-2.5 text-cream/80 text-sm transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.06] backdrop-blur-sm hover:bg-amber/[0.12] hover:border-amber/60 px-4 py-2.5 min-h-[44px] text-cream/85 text-sm transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
                 >
                   <ArrowRight className="w-4 h-4 text-amber flex-none" weight="regular" />
                   Nueva reserva
                 </a>
                 <button
                   onClick={() => window.history.back()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-muted text-sm hover:text-cream transition-colors cursor-pointer rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
                 >
                   <ArrowLeft className="w-4 h-4" weight="regular" />
                   Volver

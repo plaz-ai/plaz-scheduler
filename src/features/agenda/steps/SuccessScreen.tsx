@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Check, CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple, ArrowLeft } from '@phosphor-icons/react';
+import { CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple, ArrowLeft } from '@phosphor-icons/react';
 import type { BookingResult, EventType } from '../types';
 import { googleCalendarUrl, outlookCalendarUrl, icsObjectUrl, type CalEvent } from '../lib/calendar-export';
 
@@ -67,17 +67,19 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
 
   useGSAP(
     () => {
-      const tl = gsap.timeline();
-      tl.from('.success-icon', { scale: 0, opacity: 0, duration: 0.45, ease: 'back.out(1.7)' })
-        .from('.success-title', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out' }, '-=0.1')
-        .from('.success-detail', {
-          y: 10,
-          opacity: 0,
-          duration: 0.3,
-          stagger: 0.08,
-          ease: 'power2.out',
-        }, '-=0.05')
-        .from('.cancel-link', { opacity: 0, duration: 0.3 });
+      // Solo el dibujo del check; la entrada del bloque la da el keyframe CSS .step-panel
+      // (evita el doble fade/flash que provocaba animar también título y detalle aquí).
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const circleEl = checkRef.current?.querySelector('.check-circle') as SVGCircleElement | null;
+      const pathEl = checkRef.current?.querySelector('.check-path') as SVGPathElement | null;
+      if (!circleEl || !pathEl) return;
+      const circleLen = circleEl.getTotalLength();
+      const pathLen = pathEl.getTotalLength();
+      gsap.timeline()
+        .set(circleEl, { strokeDasharray: circleLen, strokeDashoffset: circleLen })
+        .set(pathEl, { strokeDasharray: pathLen, strokeDashoffset: pathLen })
+        .to(circleEl, { strokeDashoffset: 0, duration: 0.52, ease: 'power3.out' }, 0.1)
+        .to(pathEl, { strokeDashoffset: 0, duration: 0.36, ease: 'power2.out' }, '-=0.18');
     },
     { scope: ref }
   );
@@ -102,17 +104,39 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
 
         {/* Left — icon + heading */}
         <div className="mb-8 md:mb-0 md:pt-1">
-          <div className="success-icon inline-flex items-center justify-center w-11 h-11 rounded-full border border-amber/35 mb-6">
-            <Check ref={checkRef} className="w-5 h-5 text-amber" weight="bold" />
+          <div className="success-icon mb-6">
+            <svg
+              ref={checkRef}
+              viewBox="0 0 52 52"
+              className="w-16 h-16 text-amber"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                className="check-circle"
+                cx="26" cy="26" r="24"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                opacity="0.4"
+              />
+              <path
+                className="check-path"
+                d="M15 27 L22 34 L37 18"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
-          <h2 className="success-title font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] whitespace-pre-line">
+          <h2 role="status" aria-live="polite" className="success-title font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] whitespace-pre-line">
             {heading ?? 'Reserva\nconfirmada.'}
           </h2>
 
           {onStartOver && (
             <button
               onClick={onStartOver}
-              className="success-title mt-6 inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer active:scale-[0.98]"
+              className="success-title mt-6 inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
             >
               <ArrowLeft className="w-4 h-4" weight="regular" />
               Hacer otra reserva
@@ -122,7 +146,7 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
 
         {/* Right — summary card + cancel */}
         <div className="md:pt-1">
-          <div className="rounded-xl border border-cream/[0.08] bg-cream/[0.02] overflow-hidden mb-6">
+          <div className="rounded-xl border border-cream/[0.08] bg-navy-card overflow-hidden mb-6">
             <div className="success-detail flex items-center gap-4 px-5 py-4 border-b border-cream/[0.07]">
               <CalendarBlank className="w-4 h-4 text-amber flex-none" weight="regular" />
               <div>
@@ -158,7 +182,7 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
                 href={googleCalendarUrl(calEvent)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-cream/[0.02] px-3.5 py-2 text-cream/80 text-xs hover:border-amber/40 hover:text-cream transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 <GoogleLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
                 Google
@@ -167,14 +191,14 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
                 href={outlookCalendarUrl(calEvent)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-cream/[0.02] px-3.5 py-2 text-cream/80 text-xs hover:border-amber/40 hover:text-cream transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 <MicrosoftOutlookLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
                 Outlook
               </a>
               <button
                 onClick={downloadIcs}
-                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-cream/[0.02] px-3.5 py-2 text-cream/80 text-xs hover:border-amber/40 hover:text-cream transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 <DownloadSimple className="w-3.5 h-3.5 text-amber/80" weight="bold" />
                 .ics
@@ -186,14 +210,14 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
             {rescheduleHref && (
               <a
                 href={rescheduleHref}
-                className="text-cream/60 text-xs hover:text-cream transition-colors underline underline-offset-4"
+                className="text-cream/60 text-xs hover:text-cream transition-colors underline underline-offset-4 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
               >
                 Reagendar
               </a>
             )}
             <a
               href={buildCancelHref(booking.cancel_url)}
-              className="text-cream/50 text-xs hover:text-cream/80 transition-colors underline underline-offset-4"
+              className="text-cream/50 text-xs hover:text-cream/80 transition-colors underline underline-offset-4 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
             >
               Cancelar esta reserva
             </a>

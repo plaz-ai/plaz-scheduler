@@ -49,9 +49,10 @@ export default function CalendarGrid({ availableDays, selectedDate, onSelectDate
   // Stagger cells in — fast (120ms total), cleared after so no inline styles persist
   useGSAP(
     () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       gsap.from('.cal-day-cell', {
         opacity: 0,
-        scale: 0.82,
+        scale: 0.94,
         duration: 0.16,
         stagger: { amount: 0.12, from: 'start' },
         ease: 'power2.out',
@@ -81,7 +82,8 @@ export default function CalendarGrid({ availableDays, selectedDate, onSelectDate
         <button
           onClick={prevMonth}
           disabled={!canGoPrev}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:text-cream hover:bg-cream/[0.06] disabled:opacity-20 disabled:cursor-default transition-all duration-150 cursor-pointer"
+          aria-label="Mes anterior"
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-muted hover:text-cream hover:bg-navy-card-hover disabled:opacity-20 disabled:cursor-default transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
         >
           <CaretLeft className="w-3.5 h-3.5" weight="bold" />
         </button>
@@ -92,7 +94,8 @@ export default function CalendarGrid({ availableDays, selectedDate, onSelectDate
 
         <button
           onClick={nextMonth}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:text-cream hover:bg-cream/[0.06] transition-all duration-150 cursor-pointer"
+          aria-label="Mes siguiente"
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-muted hover:text-cream hover:bg-navy-card-hover transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
         >
           <CaretRight className="w-3.5 h-3.5" weight="bold" />
         </button>
@@ -116,17 +119,24 @@ export default function CalendarGrid({ availableDays, selectedDate, onSelectDate
           const isAvailable = availableMap.has(dateStr);
           const isSelected = dateStr === selectedDate;
           const isToday = dateStr === todayMadrid;
+          const dateLabel = new Date(viewYear, viewMonth, day).toLocaleDateString('es-ES', {
+            weekday: 'long', day: 'numeric', month: 'long',
+          }) + (isAvailable ? '' : ' (sin disponibilidad)');
 
           return (
             <button
               key={dateStr}
               disabled={!isAvailable}
               onClick={() => isAvailable && onSelectDate(availableMap.get(dateStr)!)}
+              aria-label={dateLabel}
+              aria-current={isToday ? 'date' : undefined}
+              aria-pressed={isAvailable ? isSelected : undefined}
               className={[
                 'cal-day-cell relative w-full aspect-square flex items-center justify-center',
                 'rounded-lg text-xs font-medium transition-all duration-100',
+                'focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50',
                 isSelected
-                  ? 'bg-amber text-navy font-bold shadow-lg shadow-amber/20'
+                  ? 'bg-amber text-on-amber font-bold shadow-lg shadow-amber/20'
                   : isAvailable
                   ? 'text-cream hover:bg-amber/15 hover:text-amber cursor-pointer active:scale-90'
                   : 'text-subtle/30 cursor-default',

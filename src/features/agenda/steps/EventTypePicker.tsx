@@ -1,38 +1,16 @@
 'use client';
 
-import { useRef } from 'react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 import { Clock, VideoCamera, CaretRight } from '@phosphor-icons/react';
 import type { EventType } from '../types';
-
-gsap.registerPlugin(useGSAP);
 
 interface Props {
   eventTypes: EventType[];
   onSelect: (eventType: EventType) => void;
 }
 
-// Pantalla previa estilo cal.com: el invitado elige QUÉ tipo de reunión antes
-// de ver el calendario.
 export default function EventTypePicker({ eventTypes, onSelect }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      gsap.from('.event-card', {
-        y: 14,
-        opacity: 0,
-        duration: 0.4,
-        stagger: 0.08,
-        ease: 'power2.out',
-      });
-    },
-    { scope: ref }
-  );
-
   return (
-    <div ref={ref} className="step-panel">
+    <div className="step-panel">
       <div className="mb-6 md:mb-8">
         <h1 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-3">
           ¿Qué quieres<br />agendar?
@@ -40,16 +18,29 @@ export default function EventTypePicker({ eventTypes, onSelect }: Props) {
         <p className="text-muted text-xs">Elige el tipo de reunión para ver los horarios.</p>
       </div>
 
-      <div className="flex flex-col gap-2.5 max-w-2xl">
+      {/*
+        Mobile: carrusel horizontal con scroll-snap — el contenedor sangra hasta
+        el borde del viewport (-mx + px) para que sea el único que recorte.
+        Desktop (md): lista vertical normal, max-w-2xl.
+      */}
+      <div className="
+        flex gap-3
+        overflow-x-auto -mx-6 px-6 pb-3
+        snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
+        md:flex-col md:overflow-x-visible md:mx-0 md:px-0 md:pb-0 md:snap-none md:max-w-2xl
+      ">
         {eventTypes.map((et) => (
           <button
             key={et.id}
             onClick={() => onSelect(et)}
             className="
-              event-card group flex items-center gap-4 text-left
-              rounded-xl border border-cream/[0.08] bg-cream/[0.02]
-              px-5 py-4 transition-all duration-150 cursor-pointer
-              hover:border-amber/40 hover:bg-cream/[0.04] active:scale-[0.99]
+              event-card group
+              flex-none snap-start w-[280px] max-w-[calc(100vw-3rem)]
+              md:flex-auto md:w-full md:max-w-none
+              flex items-center gap-4 text-left
+              rounded-xl border border-cream/[0.08] bg-navy-card backdrop-blur-sm
+              px-5 py-4 transition-all duration-200 cursor-pointer
+              hover:border-amber/35 hover:bg-navy-card-hover active:scale-[0.99]
               focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50
             "
           >

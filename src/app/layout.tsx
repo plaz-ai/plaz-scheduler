@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
@@ -20,6 +20,13 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)',  color: '#0A1628' },
+    { media: '(prefers-color-scheme: light)', color: '#F5F2EC' },
+  ],
+};
+
 export const metadata: Metadata = {
   title: 'Agenda tu cita | Plaz',
   description: 'Reserva una cita con el equipo de Plaz.',
@@ -29,9 +36,6 @@ export const metadata: Metadata = {
       { url: '/plaz-scheduler/icon.svg',    type: 'image/svg+xml' },
     ],
     apple: '/plaz-scheduler/icon.svg',
-  },
-  other: {
-    'theme-color': '#0D1117',
   },
 };
 

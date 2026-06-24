@@ -1,12 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
+import { useState } from 'react';
 import { CaretLeft, CircleNotch, VideoCamera } from '@phosphor-icons/react';
 import type { SelectedSlot, BookingPayload, EventType } from '../types';
-
-gsap.registerPlugin(useGSAP);
 
 interface FloatingInputProps {
   label: string;
@@ -17,49 +13,66 @@ interface FloatingInputProps {
   autoComplete?: string;
   required?: boolean;
   multiline?: boolean;
+  error?: string;
+  onBlurValidate?: (value: string) => void;
 }
 
-function FloatingInput({ label, type, value, onChange, hint, autoComplete, required, multiline }: FloatingInputProps) {
+function FloatingInput({ label, type, value, onChange, hint, autoComplete, required, multiline, error, onBlurValidate }: FloatingInputProps) {
   const [focused, setFocused] = useState(false);
   const floated = focused || value.length > 0;
   const shared = 'w-full bg-transparent text-cream text-base py-1 focus:outline-none placeholder:text-cream/20';
+  const inputId = `field-${label.replace(/\s+/g, '-').toLowerCase()}`;
+  const errorId = `${inputId}-err`;
 
   return (
     <div className={[
       'relative pt-5 pb-1.5 border-b transition-colors duration-200',
-      focused ? 'border-amber' : 'border-cream/15',
+      error ? 'border-red-400/60' : focused ? 'border-amber' : 'border-cream/15',
     ].join(' ')}>
-      <label className={[
-        'absolute left-0 pointer-events-none transition-all duration-200',
-        floated
-          ? 'top-0 text-[10px] text-amber tracking-widest uppercase font-medium'
-          : 'top-5 text-sm text-cream/35',
-      ].join(' ')}>
+      <label
+        htmlFor={inputId}
+        className={[
+          'absolute left-0 pointer-events-none transition-all duration-200',
+          floated
+            ? `top-0 text-[10px] ${error ? 'text-red-400' : 'text-amber'} tracking-widest uppercase font-medium`
+            : 'top-5 text-sm text-cream/35',
+        ].join(' ')}>
         {label}{required ? ' *' : ''}
       </label>
       {multiline ? (
         <textarea
+          id={inputId}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => { setFocused(false); onBlurValidate?.(value); }}
           placeholder={focused ? (hint ?? '') : ''}
           required={required}
           rows={2}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           className={`${shared} resize-none`}
         />
       ) : (
         <input
+          id={inputId}
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => { setFocused(false); onBlurValidate?.(value); }}
           placeholder={focused ? (hint ?? '') : ''}
           autoComplete={autoComplete}
           required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           className={shared}
         />
+      )}
+      {error && (
+        <p id={errorId} role="alert" className="text-red-400 text-[11px] mt-1 leading-tight">
+          {error}
+        </p>
       )}
     </div>
   );
@@ -75,27 +88,25 @@ interface Props {
 }
 
 export default function BookingForm({ selected, linkToken, durationMinutes, eventType, onBack, onConfirm }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const questions = eventType?.questions ?? [];
 
-  useGSAP(
-    () => {
-      gsap.from('.form-field', {
-        y: 14,
-        opacity: 0,
-        duration: 0.38,
-        stagger: 0.09,
-        ease: 'power2.out',
-      });
-    },
-    { scope: ref }
-  );
+  function validateEmail(val: string) {
+    if (!val.trim()) { setEmailError(null); return; }
+    setEmailError(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()) ? null : 'Introduce un email válido');
+  }
+
+  const isFormValid =
+    name.trim().length > 0 &&
+    email.trim().length > 0 &&
+    !emailError &&
+    questions.filter(q => q.required).every(q => (answers[q.id] ?? '').trim().length > 0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -118,11 +129,11 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
   }
 
   return (
-    <div ref={ref} className="step-panel">
+    <div className="step-panel">
       {/* Back button — full width, above the grid */}
       <button
         onClick={onBack}
-        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98]"
+        className="form-field inline-flex items-center gap-1.5 text-muted text-sm hover:text-cream transition-colors mb-8 cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
       >
         <CaretLeft className="w-4 h-4" weight="regular" />
         Cambiar horario
@@ -172,10 +183,12 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
               label="Email"
               type="email"
               value={email}
-              onChange={setEmail}
+              onChange={(v) => { setEmail(v); if (emailError) validateEmail(v); }}
+              onBlurValidate={validateEmail}
               hint="maria@ejemplo.com"
               autoComplete="email"
               required
+              error={emailError ?? undefined}
             />
           </div>
 
@@ -202,8 +215,8 @@ export default function BookingForm({ selected, linkToken, durationMinutes, even
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-50 disabled:cursor-not-allowed text-navy font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98]"
+            disabled={isSubmitting || !isFormValid}
+            className="form-field w-full bg-amber hover:bg-amber-hover disabled:opacity-40 disabled:cursor-not-allowed text-on-amber font-semibold py-4 transition-colors duration-200 text-sm cursor-pointer active:scale-[0.98] rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
           >
             {isSubmitting ? (
               <span className="inline-flex items-center justify-center gap-2">
