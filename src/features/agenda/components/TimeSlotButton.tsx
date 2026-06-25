@@ -1,16 +1,18 @@
 'use client';
 
 import type { TimeSlot } from '../types';
+import { formatTime, type TimeFormat } from '../lib/timeFormat';
 
 interface Props {
   slot: TimeSlot;
   selected: boolean;
+  timeFormat: TimeFormat;
   onSelect: (slot: TimeSlot) => void;
 }
 
 // Patrón cal.com: en reposo muestra la hora; al hover (o si está seleccionado)
 // se divide en "hora | Confirmar". En móvil el tap directo confirma igual.
-export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
+export default function TimeSlotButton({ slot, selected, timeFormat, onSelect }: Props) {
   return (
     <button
       onClick={() => onSelect(slot)}
@@ -32,7 +34,7 @@ export default function TimeSlotButton({ slot, selected, onSelect }: Props) {
             : 'text-cream/60 group-hover:text-cream group-hover:flex-none group-hover:px-4',
         ].join(' ')}
       >
-        {slot.start_madrid}
+        {formatTime(slot.start_madrid, timeFormat)}
       </span>
 
       {/* Confirmar — aparece en hover (desktop) */}

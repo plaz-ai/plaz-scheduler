@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple, ArrowLeft } from '@phosphor-icons/react';
+import { CalendarBlank, User, VideoCamera, GoogleLogo, MicrosoftOutlookLogo, DownloadSimple, ArrowLeft, CircleNotch, Check } from '@phosphor-icons/react';
 import type { BookingResult, EventType } from '../types';
 import { googleCalendarUrl, outlookCalendarUrl, icsObjectUrl, type CalEvent } from '../lib/calendar-export';
+import { useTimeFormat } from '../lib/timeFormat';
+import { addToGoogleCalendar, getGoogleClientId } from '../lib/google-calendar';
 
 gsap.registerPlugin(useGSAP);
 
@@ -21,8 +23,13 @@ interface Props {
 
 export default function SuccessScreen({ booking, eventType, durationMinutes, userTz, heading, rescheduleHref, onStartOver }: Props) {
   const tz = userTz || 'Europe/Madrid';
+  const [timeFormat] = useTimeFormat();
   const ref = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
+
+  // Alta automática en Google Calendar (solo si hay Client ID público configurado).
+  const hasGoogleAuto = getGoogleClientId() !== undefined;
+  const [gcalState, setGcalState] = useState<'idle' | 'adding' | 'done' | 'error'>('idle');
 
   // Construye la URL de cancelación apuntando a nuestra propia página,
   // extrayendo booking_id y token del cancel_url que devuelve el backend.
@@ -65,6 +72,17 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
     URL.revokeObjectURL(url);
   }
 
+  async function handleAddToGoogle() {
+    setGcalState('adding');
+    try {
+      await addToGoogleCalendar(calEvent, tz);
+      setGcalState('done');
+    } catch {
+      // Declina o error: caemos a las opciones manuales.
+      setGcalState('error');
+    }
+  }
+
   useGSAP(
     () => {
       // Solo el dibujo del check; la entrada del bloque la da el keyframe CSS .step-panel
@@ -93,10 +111,42 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
           month: 'long',
           hour: '2-digit',
           minute: '2-digit',
+          hour12: timeFormat === '12',
         }).format(new Date(booking.start_utc));
         return raw.charAt(0).toUpperCase() + raw.slice(1);
       })()
     : booking.start_madrid;
+
+  // Opciones manuales de calendario (siempre disponibles: fallback y usuarios no-Google).
+  const calendarButtons = (
+    <>
+      <a
+        href={googleCalendarUrl(calEvent)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
+      >
+        <GoogleLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
+        Google
+      </a>
+      <a
+        href={outlookCalendarUrl(calEvent)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
+      >
+        <MicrosoftOutlookLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
+        Outlook
+      </a>
+      <button
+        onClick={downloadIcs}
+        className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
+      >
+        <DownloadSimple className="w-3.5 h-3.5 text-amber/80" weight="bold" />
+        .ics
+      </button>
+    </>
+  );
 
   return (
     <div ref={ref} className="step-panel">
@@ -174,36 +224,49 @@ export default function SuccessScreen({ booking, eventType, durationMinutes, use
             )}
           </div>
 
-          {/* Añadir al calendario (cal.com) — generado en cliente */}
+          {/* Añadir al calendario — alta automática en Google (1 permiso) + opciones manuales */}
           <div className="success-detail mb-6">
-            <p className="text-subtle text-[9px] uppercase tracking-widest mb-2.5">Añadir al calendario</p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href={googleCalendarUrl(calEvent)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
-              >
-                <GoogleLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
-                Google
-              </a>
-              <a
-                href={outlookCalendarUrl(calEvent)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
-              >
-                <MicrosoftOutlookLogo className="w-3.5 h-3.5 text-amber/80" weight="bold" />
-                Outlook
-              </a>
-              <button
-                onClick={downloadIcs}
-                className="inline-flex items-center gap-2 rounded-lg border border-cream/[0.1] bg-navy-card px-3.5 py-2.5 min-h-[44px] text-cream/80 text-xs hover:border-amber/40 hover:bg-navy-card-hover hover:text-cream transition-colors cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
-              >
-                <DownloadSimple className="w-3.5 h-3.5 text-amber/80" weight="bold" />
-                .ics
-              </button>
-            </div>
+            {hasGoogleAuto && gcalState === 'done' ? (
+              <div className="flex items-center gap-2 text-amber" role="status" aria-live="polite">
+                <Check className="w-4 h-4 flex-none" weight="bold" />
+                <span className="text-cream text-sm font-medium">Añadido a tu Google Calendar</span>
+              </div>
+            ) : hasGoogleAuto ? (
+              <>
+                <p className="text-subtle text-[9px] uppercase tracking-widest mb-2.5">Añadir al calendario</p>
+                <button
+                  onClick={handleAddToGoogle}
+                  disabled={gcalState === 'adding'}
+                  aria-live="polite"
+                  className="inline-flex items-center gap-2 rounded-lg bg-amber hover:bg-amber-hover disabled:opacity-60 disabled:cursor-not-allowed text-on-amber font-semibold px-4 py-2.5 min-h-[44px] text-sm transition-colors cursor-pointer active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                >
+                  {gcalState === 'adding' ? (
+                    <>
+                      <CircleNotch className="w-4 h-4 animate-spin" weight="bold" />
+                      Añadiendo…
+                    </>
+                  ) : (
+                    <>
+                      <GoogleLogo className="w-4 h-4" weight="bold" />
+                      Añadir a Google Calendar
+                    </>
+                  )}
+                </button>
+                {gcalState === 'error' && (
+                  <p role="alert" className="text-cream/50 text-xs mt-2">No se pudo añadir automáticamente. Usa una opción manual:</p>
+                )}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {calendarButtons}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-subtle text-[9px] uppercase tracking-widest mb-2.5">Añadir al calendario</p>
+                <div className="flex flex-wrap gap-2">
+                  {calendarButtons}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="cancel-link flex flex-wrap items-center gap-x-5 gap-y-2">

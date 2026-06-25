@@ -7,6 +7,7 @@ import { Clock, CaretLeft, ArrowRight } from '@phosphor-icons/react';
 import type { AvailabilityResponse, AvailableDay, TimeSlot } from '../types';
 import CalendarGrid from '../components/CalendarGrid';
 import TimeSlotButton from '../components/TimeSlotButton';
+import { formatTime, useTimeFormat } from '../lib/timeFormat';
 
 gsap.registerPlugin(useGSAP);
 
@@ -24,6 +25,7 @@ interface Props {
 export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzLabel, durations, onDurationChange, onSelect, onChangeEventType }: Props) {
   const slotsRef = useRef<HTMLDivElement>(null);
   const [activeDay, setActiveDay] = useState<AvailableDay | null>(null);
+  const [timeFormat, setTimeFormat] = useTimeFormat();
 
   // Slots animate in whenever the active day changes — fast x-slide, cleared after
   useGSAP(
@@ -65,9 +67,36 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
         <h1 className="font-display font-black text-4xl md:text-5xl text-cream tracking-tighter leading-[0.92] mb-3">
           Elige tu<br />fecha.
         </h1>
-        <div className="flex items-center gap-2">
-          <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
-          <span className="text-muted text-xs">{durationMinutes} min · {tzLabel ?? 'Madrid'}</span>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3 h-3 text-amber flex-none" weight="regular" />
+            <span className="text-muted text-xs">{durationMinutes} min · {tzLabel ?? 'Madrid'}</span>
+          </div>
+
+          {/* Formato de hora (cal.com): 24h / AM·PM */}
+          <div
+            className="inline-flex items-center rounded-lg border border-cream/[0.10] bg-navy-card p-0.5"
+            role="group"
+            aria-label="Formato de hora"
+          >
+            {(['24', '12'] as const).map(f => {
+              const active = timeFormat === f;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setTimeFormat(f)}
+                  aria-pressed={active}
+                  className={[
+                    'rounded-md px-2.5 py-1 text-xs transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50',
+                    active ? 'bg-amber text-on-amber font-semibold' : 'text-cream/55 hover:text-cream',
+                  ].join(' ')}
+                >
+                  {f === '24' ? '24h' : 'AM·PM'}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Selector de duración (cal.com) — solo si el tipo ofrece varias */}
@@ -106,7 +135,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
               className="inline-flex items-center gap-2 rounded-lg border border-amber/30 bg-amber/[0.06] backdrop-blur-sm hover:bg-amber/[0.12] hover:border-amber/55 px-4 py-2.5 text-cream/85 text-sm transition-all duration-150 cursor-pointer active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-amber/50"
             >
               <ArrowRight className="w-4 h-4 text-amber flex-none" weight="regular" />
-              Lo antes posible — {firstDay.short_label} · {firstSlot.start_madrid}
+              Lo antes posible — {firstDay.short_label} · {formatTime(firstSlot.start_madrid, timeFormat)}
             </button>
           </div>
         );
@@ -133,7 +162,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
           >
             {activeDay ? (
               <>
-                <p className="text-subtle text-[9px] uppercase tracking-widest mb-3 font-medium">
+                <p className="text-subtle text-[9px] uppercase tracking-widest mb-3">
                   {activeDay.label}
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-1.5 md:gap-1.5 md:max-h-[55vh] md:overflow-y-auto md:pr-1 slot-scroll">
@@ -142,6 +171,7 @@ export default function SlotPicker({ data, selectedSlotUtc, durationMinutes, tzL
                       key={slot.start_utc}
                       slot={slot}
                       selected={slot.start_utc === selectedSlotUtc}
+                      timeFormat={timeFormat}
                       onSelect={s => onSelect(activeDay, s)}
                     />
                   ))}

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CaretLeft, CircleNotch, ArrowRight } from '@phosphor-icons/react';
 import type { SelectedSlot, RescheduleOriginal } from '../types';
+import { formatTime, useTimeFormat } from '../lib/timeFormat';
 
 interface Props {
   original: RescheduleOriginal;
@@ -16,6 +17,7 @@ export default function RescheduleConfirm({ original, selected, durationMinutes,
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeFormat] = useTimeFormat();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +67,7 @@ export default function RescheduleConfirm({ original, selected, durationMinutes,
             <div>
               <p className="text-cream text-sm font-medium capitalize">{selected.day.label}</p>
               <p className="font-mono text-amber text-sm">
-                {selected.slot.start_madrid}
+                {formatTime(selected.slot.start_madrid, timeFormat)}
                 <span className="text-subtle mx-2">·</span>
                 <span className="text-muted">{durationMinutes} min</span>
               </p>
