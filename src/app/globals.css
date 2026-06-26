@@ -129,3 +129,23 @@ body {
   height: 0;
   display: none;
 }
+
+/* Thin amber scrollbar for slot columns (backoffice) */
+.scrollbar-amber::-webkit-scrollbar { height: 3px; }
+.scrollbar-amber::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-amber::-webkit-scrollbar-thumb { background: rgba(232, 162, 74, 0.3); border-radius: 99px; }
+
+/* Fondo de pantalla del backoffice (tokens navy + amber).
+   Se pinta en un pseudo-elemento FIJO al viewport (no al div, cuya altura
+   varía con el contenido), así el gradiente cubre siempre la pantalla visible
+   y es consistente a cualquier tamaño de ventana y al hacer scroll. */
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 70% 0%, rgba(27, 53, 83, 0.55) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 100%, rgba(232, 162, 74, 0.04) 0%, transparent 45%),
+    #0A1628;
+}
